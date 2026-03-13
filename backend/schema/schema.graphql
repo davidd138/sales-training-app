@@ -1,0 +1,167 @@
+type User {
+  userId: String!
+  email: String!
+  name: String
+  role: String!
+}
+
+type Scenario {
+  id: String!
+  name: String!
+  description: String!
+  clientName: String!
+  clientTitle: String!
+  clientCompany: String!
+  industry: String!
+  difficulty: String!
+  persona: String!
+  createdBy: String
+  createdAt: String
+}
+
+type Conversation {
+  id: String!
+  userId: String!
+  userEmail: String
+  scenarioId: String!
+  scenarioName: String
+  clientName: String
+  transcript: String
+  duration: Int
+  status: String!
+  startedAt: String!
+  endedAt: String
+}
+
+type Score {
+  conversationId: String!
+  userId: String!
+  scenarioId: String
+  overallScore: Int!
+  rapport: Int!
+  discovery: Int!
+  presentation: Int!
+  objectionHandling: Int!
+  closing: Int!
+  strengths: [String!]
+  improvements: [String!]
+  detailedFeedback: String
+  analyzedAt: String
+}
+
+type ConversationWithScore {
+  conversation: Conversation!
+  score: Score
+}
+
+type ConversationList {
+  items: [Conversation!]!
+  nextToken: String
+}
+
+type Analytics {
+  totalSessions: Int!
+  avgOverallScore: Int
+  avgRapport: Int
+  avgDiscovery: Int
+  avgPresentation: Int
+  avgObjectionHandling: Int
+  avgClosing: Int
+  teamAvgOverallScore: Int
+  teamAvgRapport: Int
+  teamAvgDiscovery: Int
+  teamAvgPresentation: Int
+  teamAvgObjectionHandling: Int
+  teamAvgClosing: Int
+  recentScores: [RecentScore!]
+  percentile: Int
+}
+
+type RecentScore {
+  conversationId: String!
+  overallScore: Int!
+  date: String!
+  scenarioName: String
+}
+
+type LeaderboardEntry {
+  userId: String!
+  email: String!
+  name: String
+  avgScore: Int!
+  totalSessions: Int!
+}
+
+type Leaderboard {
+  entries: [LeaderboardEntry!]!
+}
+
+type Guideline {
+  id: String!
+  title: String!
+  content: String!
+  isActive: Boolean!
+  createdBy: String
+  createdAt: String
+  updatedAt: String
+}
+
+type RealtimeToken {
+  token: String!
+  expiresAt: Int!
+}
+
+input CreateScenarioInput {
+  name: String!
+  description: String!
+  clientName: String!
+  clientTitle: String!
+  clientCompany: String!
+  industry: String!
+  difficulty: String!
+  persona: String!
+}
+
+input CreateConversationInput {
+  scenarioId: String!
+}
+
+input UpdateConversationInput {
+  id: String!
+  transcript: String
+  duration: Int
+  status: String
+  endedAt: String
+}
+
+input UpdateGuidelineInput {
+  id: String!
+  title: String
+  content: String
+  isActive: Boolean
+}
+
+input CreateGuidelineInput {
+  title: String!
+  content: String!
+}
+
+type Query {
+  listScenarios: [Scenario!]! @aws_cognito_user_pools
+  getConversation(id: String!): ConversationWithScore @aws_cognito_user_pools
+  listConversations(limit: Int, nextToken: String): ConversationList! @aws_cognito_user_pools
+  getAnalytics: Analytics! @aws_cognito_user_pools
+  getLeaderboard: Leaderboard! @aws_cognito_user_pools
+  getGuidelines: [Guideline!]! @aws_cognito_user_pools
+  getRealtimeToken: RealtimeToken! @aws_cognito_user_pools
+}
+
+type Mutation {
+  syncUser: User! @aws_cognito_user_pools
+  createScenario(input: CreateScenarioInput!): Scenario! @aws_cognito_user_pools
+  createConversation(input: CreateConversationInput!): Conversation! @aws_cognito_user_pools
+  updateConversation(input: UpdateConversationInput!): Conversation! @aws_cognito_user_pools
+  analyzeConversation(conversationId: String!): Score! @aws_cognito_user_pools
+  createGuideline(input: CreateGuidelineInput!): Guideline! @aws_cognito_user_pools
+  updateGuideline(input: UpdateGuidelineInput!): Guideline! @aws_cognito_user_pools
+}

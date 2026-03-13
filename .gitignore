@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+mobile/node_modules/
+
+# Expo
+mobile/.expo/
+mobile/dist/
+mobile/ios/
+mobile/android/
+
+# CDK
+infrastructure/cdk.out/
+infrastructure/.cdk.staging/
+*.js
+!mobile/**/*.js
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+
+# Claude
+.claude/

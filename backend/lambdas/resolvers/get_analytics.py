@@ -1,9 +1,10 @@
 import os
-import json
-from decimal import Decimal
 import boto3
 
 scores_table = boto3.resource("dynamodb").Table(os.environ["SCORES_TABLE"])
+conversations_table = boto3.resource("dynamodb").Table(os.environ["CONVERSATIONS_TABLE"])
+
+CATEGORIES = ["rapport", "discovery", "presentation", "objectionHandling", "closing"]
 
 
 def handler(event, context):
@@ -21,56 +22,56 @@ def handler(event, context):
     user_avg = compute_averages(user_scores)
     team_avg = compute_averages(all_scores)
 
-    all_overalls = [float(s["overallScore"]) for s in all_scores if "overallScore" in s]
-    user_overall = user_avg.get("overall", 0)
+    all_overalls = [int(s["overallScore"]) for s in all_scores if "overallScore" in s]
+    user_overall = user_avg.get("overallScore", 0)
     percentile = 0
     if all_overalls:
         below = sum(1 for x in all_overalls if x < user_overall)
         percentile = round((below / len(all_overalls)) * 100)
 
-    trend = []
+    recent = []
     for s in user_scores[-20:]:
-        trend.append({
+        conv_id = s.get("conversationId", "")
+        scenario_name = None
+        if conv_id:
+            conv = conversations_table.get_item(Key={"id": conv_id}).get("Item")
+            if conv:
+                scenario_name = conv.get("scenarioName")
+        recent.append({
+            "conversationId": conv_id,
+            "overallScore": int(s.get("overallScore", 0)),
             "date": s.get("analyzedAt", ""),
-            "score": float(s.get("overallScore", 0)),
+            "scenarioName": scenario_name,
         })
 
-    return {
+    result = {
         "totalSessions": len(user_scores),
-        "averageScore": user_avg.get("overall", 0),
+        "avgOverallScore": user_avg.get("overallScore"),
         "percentile": percentile,
-        "categoryAverages": json.dumps(user_avg.get("categories", {})),
-        "teamCategoryAverages": json.dumps(team_avg.get("categories", {})),
-        "trend": json.dumps(trend),
+        "recentScores": recent,
     }
+
+    for cat in CATEGORIES:
+        camel = cat[0].upper() + cat[1:]
+        result[f"avg{camel}"] = user_avg.get(cat)
+        result[f"teamAvg{camel}"] = team_avg.get(cat)
+    result["teamAvgOverallScore"] = team_avg.get("overallScore")
+
+    return result
 
 
 def compute_averages(scores):
     if not scores:
-        return {"overall": 0, "categories": {}}
-
-    total_overall = 0
-    cat_totals = {}
-    cat_counts = {}
-
-    for s in scores:
-        total_overall += float(s.get("overallScore", 0))
-
-        cats = s.get("categories", "{}")
-        if isinstance(cats, str):
-            cats = json.loads(cats)
-
-        for name, data in cats.items():
-            score_val = float(data["score"]) if isinstance(data, dict) else float(data)
-            cat_totals[name] = cat_totals.get(name, 0) + score_val
-            cat_counts[name] = cat_counts.get(name, 0) + 1
+        return {}
 
     n = len(scores)
-    cat_avgs = {}
-    for name in cat_totals:
-        cat_avgs[name] = round(cat_totals[name] / cat_counts[name], 1)
+    totals = {"overallScore": 0}
+    for cat in CATEGORIES:
+        totals[cat] = 0
 
-    return {
-        "overall": round(total_overall / n, 1),
-        "categories": cat_avgs,
-    }
+    for s in scores:
+        totals["overallScore"] += int(s.get("overallScore", 0))
+        for cat in CATEGORIES:
+            totals[cat] += int(s.get(cat, 0))
+
+    return {k: round(v / n) for k, v in totals.items()}

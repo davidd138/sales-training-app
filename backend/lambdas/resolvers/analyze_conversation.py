@@ -25,8 +25,8 @@ def handler(event, context):
     if isinstance(transcript, str):
         transcript = json.loads(transcript)
 
+    scenario_id = conv.get("scenarioId", "")
     scenario = None
-    scenario_id = conv.get("scenarioId")
     if scenario_id:
         scenario = scenarios_table.get_item(Key={"id": scenario_id}).get("Item")
 
@@ -52,15 +52,21 @@ def handler(event, context):
     analysis_text = result["content"][0]["text"]
     analysis = json.loads(analysis_text)
 
+    cats = analysis["categories"]
     now = datetime.now(timezone.utc).isoformat()
     score_item = {
         "conversationId": conv_id,
         "userId": user_id,
+        "scenarioId": scenario_id,
         "overallScore": analysis["overallScore"],
-        "categories": json.dumps(analysis["categories"]),
-        "strengths": json.dumps(analysis["strengths"]),
-        "improvements": json.dumps(analysis["improvements"]),
-        "feedback": analysis["feedback"],
+        "rapport": cats["rapport"]["score"],
+        "discovery": cats["discovery"]["score"],
+        "presentation": cats["presentation"]["score"],
+        "objectionHandling": cats["objectionHandling"]["score"],
+        "closing": cats["closing"]["score"],
+        "strengths": analysis["strengths"],
+        "improvements": analysis["improvements"],
+        "detailedFeedback": analysis["feedback"],
         "analyzedAt": now,
     }
     scores_table.put_item(Item=score_item)
@@ -80,7 +86,7 @@ def build_analysis_prompt(transcript, scenario, guidelines):
                 "rapport": {"score": 80, "comment": "..."},
                 "discovery": {"score": 70, "comment": "..."},
                 "presentation": {"score": 75, "comment": "..."},
-                "objections": {"score": 65, "comment": "..."},
+                "objectionHandling": {"score": 65, "comment": "..."},
                 "closing": {"score": 80, "comment": "..."},
             },
             "strengths": ["Fortaleza 1", "Fortaleza 2", "Fortaleza 3"],
@@ -92,12 +98,12 @@ def build_analysis_prompt(transcript, scenario, guidelines):
         "- rapport: Conexión personal con el cliente",
         "- discovery: Preguntas sobre necesidades del cliente",
         "- presentation: Presentación de soluciones adecuadas",
-        "- objections: Manejo de objeciones y pushback",
+        "- objectionHandling: Manejo de objeciones y pushback",
         "- closing: Avance y cierre de la venta",
     ]
 
     if scenario:
-        persona = scenario.get("clientPersona", "{}")
+        persona = scenario.get("persona", "{}")
         if isinstance(persona, str):
             persona = json.loads(persona)
         parts.extend([
@@ -105,9 +111,11 @@ def build_analysis_prompt(transcript, scenario, guidelines):
             f"ESCENARIO: {scenario.get('name', '')}",
             f"Industria: {scenario.get('industry', '')}",
             f"Dificultad: {scenario.get('difficulty', '')}",
-            f"Cliente: {persona.get('name', '')} - {persona.get('role', '')}",
-            f"Personalidad: {persona.get('personality', '')}",
+            f"Cliente: {scenario.get('clientName', '')} - {scenario.get('clientTitle', '')}",
+            f"Empresa: {scenario.get('clientCompany', '')}",
         ])
+        if isinstance(persona, dict) and persona.get("personality"):
+            parts.append(f"Personalidad: {persona['personality']}")
 
     if guidelines:
         parts.extend(["", "GUIDELINES DE VENTA:"])

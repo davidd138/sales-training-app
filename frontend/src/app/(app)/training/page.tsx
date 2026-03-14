@@ -56,16 +56,20 @@ export default function TrainingPage() {
   useEffect(() => {
     if (!scenario || conversationId) return;
     async function start() {
-      const conv = await createConv.execute({
-        input: { scenarioId: scenario!.id, scenarioName: scenario!.name, clientName: scenario!.clientName },
-      });
-      if (conv?.id) {
-        setConversationId(conv.id);
-        startTimeRef.current = Date.now();
-        timerRef.current = setInterval(() => {
-          setElapsed(Math.floor((Date.now() - startTimeRef.current) / 1000));
-        }, 1000);
-        training.connect();
+      try {
+        const conv = await createConv.execute({
+          input: { scenarioId: scenario!.id },
+        });
+        if (conv?.id) {
+          setConversationId(conv.id);
+          startTimeRef.current = Date.now();
+          timerRef.current = setInterval(() => {
+            setElapsed(Math.floor((Date.now() - startTimeRef.current) / 1000));
+          }, 1000);
+          training.connect();
+        }
+      } catch (e) {
+        console.error('Failed to start training:', e);
       }
     }
     start();

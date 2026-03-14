@@ -6,6 +6,7 @@ import { AdminGuard } from '@/components/layout/AdminGuard';
 import { useQuery, useMutation } from '@/hooks/useGraphQL';
 import { LIST_ALL_USERS } from '@/lib/graphql/queries';
 import { UPDATE_USER_STATUS } from '@/lib/graphql/mutations';
+import { useToast } from '@/components/ui/Toast';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { Card } from '@/components/ui/Card';
@@ -45,21 +46,34 @@ export default function AdminUsersPage() {
 function UsersContent() {
   const { data: users, loading, error, execute: fetchUsers } = useQuery<User[]>(LIST_ALL_USERS);
   const { execute: updateStatus, loading: updating } = useMutation(UPDATE_USER_STATUS);
+  const { addToast } = useToast();
   const [editingUser, setEditingUser] = useState<string | null>(null);
   const [validFrom, setValidFrom] = useState('');
   const [validUntil, setValidUntil] = useState('');
 
   useEffect(() => { fetchUsers().catch(() => {}); }, [fetchUsers]);
 
-  const handleUpdateStatus = useCallback(async (userId: string, status: UserStatus, from?: string, until?: string) => {
-    const input: Record<string, string> = { userId, status };
-    if (from) input.validFrom = new Date(from).toISOString();
-    if (until) input.validUntil = new Date(until).toISOString();
+  const STATUS_MESSAGES: Record<UserStatus, string> = {
+    active: 'Usuario aprobado correctamente',
+    suspended: 'Usuario suspendido correctamente',
+    pending: 'Usuario marcado como pendiente',
+    expired: 'Usuario marcado como expirado',
+  };
 
-    await updateStatus({ input });
-    setEditingUser(null);
-    fetchUsers();
-  }, [updateStatus, fetchUsers]);
+  const handleUpdateStatus = useCallback(async (userId: string, status: UserStatus, from?: string, until?: string) => {
+    try {
+      const input: Record<string, string> = { userId, status };
+      if (from) input.validFrom = new Date(from).toISOString();
+      if (until) input.validUntil = new Date(until).toISOString();
+
+      await updateStatus({ input });
+      setEditingUser(null);
+      addToast(STATUS_MESSAGES[status] || 'Estado actualizado correctamente');
+      fetchUsers();
+    } catch {
+      addToast('Error al actualizar usuario', 'error');
+    }
+  }, [updateStatus, fetchUsers, addToast]);
 
   if (loading && !users) {
     return (

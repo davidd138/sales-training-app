@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import type { Scenario } from '@/types';
 
 const mockReplace = vi.fn();
+const mockPush = vi.fn();
 const mockConnect = vi.fn();
 const mockDisconnect = vi.fn();
 let mockSearchParams = new URLSearchParams('id=sc-1');
@@ -12,7 +13,7 @@ const mockUpdateExecute = vi.fn();
 const mockAnalyzeExecute = vi.fn();
 
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: vi.fn(), replace: mockReplace, back: vi.fn() }),
+  useRouter: () => ({ push: mockPush, replace: mockReplace, back: vi.fn() }),
   useSearchParams: () => mockSearchParams,
 }));
 
@@ -44,12 +45,12 @@ const mockScenario: Scenario = {
   id: 'sc-1',
   name: 'Test Scenario',
   description: 'A test scenario',
-  clientName: 'María García',
+  clientName: 'Maria Garcia',
   clientTitle: 'CEO',
   clientCompany: 'TechCorp',
   industry: 'Technology',
   difficulty: 'easy',
-  persona: '{}',
+  persona: '{"personality": "Friendly"}',
 };
 
 describe('TrainingPage', () => {
@@ -67,7 +68,6 @@ describe('TrainingPage', () => {
 
   it('loads scenarios and finds the right one', async () => {
     mockQueryExecute.mockResolvedValue([mockScenario]);
-    mockCreateExecute.mockResolvedValue({ id: 'conv-1' });
 
     const { default: TrainingPage } = await import('@/app/(app)/training/page');
     render(<TrainingPage />);
@@ -75,43 +75,57 @@ describe('TrainingPage', () => {
     expect(mockQueryExecute).toHaveBeenCalledOnce();
   });
 
-  it('creates conversation with only scenarioId (no extra fields)', async () => {
+  it('shows briefing screen with scenario details before call starts', async () => {
+    mockQueryExecute.mockResolvedValue([mockScenario]);
+
+    const { default: TrainingPage } = await import('@/app/(app)/training/page');
+    render(<TrainingPage />);
+
+    await waitFor(() => {
+      // Should show client name in briefing
+      expect(screen.getByText('Maria Garcia')).toBeTruthy();
+    });
+
+    // Should show the "Iniciar Llamada" button
+    expect(screen.getByText('Iniciar Llamada')).toBeTruthy();
+
+    // Should NOT auto-connect
+    expect(mockConnect).not.toHaveBeenCalled();
+    expect(mockCreateExecute).not.toHaveBeenCalled();
+  });
+
+  it('starts call when user clicks Iniciar Llamada', async () => {
     mockQueryExecute.mockResolvedValue([mockScenario]);
     mockCreateExecute.mockResolvedValue({ id: 'conv-1' });
 
     const { default: TrainingPage } = await import('@/app/(app)/training/page');
     render(<TrainingPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Iniciar Llamada')).toBeTruthy();
+    });
+
+    fireEvent.click(screen.getByText('Iniciar Llamada'));
 
     await waitFor(() => {
       expect(mockCreateExecute).toHaveBeenCalledWith({
         input: { scenarioId: 'sc-1' },
       });
     });
-  });
-
-  it('calls training.connect() after successful conversation creation', async () => {
-    mockQueryExecute.mockResolvedValue([mockScenario]);
-    mockCreateExecute.mockResolvedValue({ id: 'conv-1' });
-
-    const { default: TrainingPage } = await import('@/app/(app)/training/page');
-    render(<TrainingPage />);
 
     await waitFor(() => {
       expect(mockConnect).toHaveBeenCalledOnce();
     });
   });
 
-  it('does not call connect if conversation creation fails', async () => {
+  it('shows difficulty tips in briefing', async () => {
     mockQueryExecute.mockResolvedValue([mockScenario]);
-    mockCreateExecute.mockRejectedValue(new Error('Mutation failed'));
 
     const { default: TrainingPage } = await import('@/app/(app)/training/page');
     render(<TrainingPage />);
 
     await waitFor(() => {
-      expect(mockCreateExecute).toHaveBeenCalled();
+      expect(screen.getByText('Nivel Facil')).toBeTruthy();
     });
-
-    expect(mockConnect).not.toHaveBeenCalled();
   });
 });

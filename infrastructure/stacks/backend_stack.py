@@ -50,6 +50,14 @@ class BackendStack(cdk.Stack):
             ),
         )
 
+        # ---- Cognito Admin Group ----
+        cognito.CfnUserPoolGroup(
+            self, "AdminsGroup",
+            user_pool_id=user_pool.user_pool_id,
+            group_name="admins",
+            description="Administrator users (professors)",
+        )
+
         user_pool_client = user_pool.add_client(
             "AppClient",
             user_pool_client_name=f"{env_name}-st-app-client",

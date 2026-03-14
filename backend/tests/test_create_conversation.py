@@ -7,6 +7,9 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lambdas', 'res
 
 os.environ.setdefault("CONVERSATIONS_TABLE", "test-conversations")
 os.environ.setdefault("SCENARIOS_TABLE", "test-scenarios")
+os.environ.setdefault("USERS_TABLE", "test-users")
+os.environ.setdefault("SCORES_TABLE", "test-scores")
+os.environ.setdefault("GUIDELINES_TABLE", "test-guidelines")
 
 
 class TestCreateConversation:
@@ -21,14 +24,18 @@ class TestCreateConversation:
             },
         }
 
+    @patch("auth_helpers.users_table")
     @patch("create_conversation.scenarios_table")
     @patch("create_conversation.conversations_table")
-    def test_creates_conversation(self, mock_conv_table, mock_scen_table):
+    def test_creates_conversation(self, mock_conv_table, mock_scen_table, mock_users_table):
+        mock_users_table.get_item.return_value = {
+            "Item": {"userId": "user-123", "role": "rep", "status": "active"}
+        }
         mock_scen_table.get_item.return_value = {
             "Item": {
                 "id": "550e8400-e29b-41d4-a716-446655440000",
                 "name": "Test Scenario",
-                "clientName": "María García",
+                "clientName": "Maria Garcia",
             }
         }
         mock_conv_table.put_item.return_value = {}
@@ -40,7 +47,7 @@ class TestCreateConversation:
         assert result["userId"] == "user-123"
         assert result["userEmail"] == "test@example.com"
         assert result["scenarioName"] == "Test Scenario"
-        assert result["clientName"] == "María García"
+        assert result["clientName"] == "Maria Garcia"
         assert result["status"] == "in_progress"
         assert result["transcript"] == "[]"
         assert result["duration"] == 0
@@ -49,9 +56,13 @@ class TestCreateConversation:
 
         mock_conv_table.put_item.assert_called_once()
 
+    @patch("auth_helpers.users_table")
     @patch("create_conversation.scenarios_table")
     @patch("create_conversation.conversations_table")
-    def test_rejects_invalid_uuid(self, mock_conv_table, mock_scen_table):
+    def test_rejects_invalid_uuid(self, mock_conv_table, mock_scen_table, mock_users_table):
+        mock_users_table.get_item.return_value = {
+            "Item": {"userId": "user-123", "role": "rep", "status": "active"}
+        }
         from create_conversation import handler
 
         with pytest.raises(Exception, match="must be a valid UUID"):
@@ -59,14 +70,32 @@ class TestCreateConversation:
 
         mock_conv_table.put_item.assert_not_called()
 
+    @patch("auth_helpers.users_table")
     @patch("create_conversation.scenarios_table")
     @patch("create_conversation.conversations_table")
-    def test_rejects_missing_scenario(self, mock_conv_table, mock_scen_table):
+    def test_rejects_missing_scenario(self, mock_conv_table, mock_scen_table, mock_users_table):
+        mock_users_table.get_item.return_value = {
+            "Item": {"userId": "user-123", "role": "rep", "status": "active"}
+        }
         mock_scen_table.get_item.return_value = {}
 
         from create_conversation import handler
 
         with pytest.raises(Exception, match="Scenario not found"):
+            handler(self._make_event(), None)
+
+        mock_conv_table.put_item.assert_not_called()
+
+    @patch("auth_helpers.users_table")
+    @patch("create_conversation.scenarios_table")
+    @patch("create_conversation.conversations_table")
+    def test_rejects_pending_user(self, mock_conv_table, mock_scen_table, mock_users_table):
+        mock_users_table.get_item.return_value = {
+            "Item": {"userId": "user-123", "role": "rep", "status": "pending"}
+        }
+        from create_conversation import handler
+
+        with pytest.raises(Exception, match="pending approval"):
             handler(self._make_event(), None)
 
         mock_conv_table.put_item.assert_not_called()

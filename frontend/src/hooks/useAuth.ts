@@ -20,7 +20,7 @@ type AuthContextType = {
   needsConfirmation: boolean;
   pendingEmail: string | null;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, name: string) => Promise<void>;
+  signUp: (email: string, password: string, name: string) => Promise<boolean>;
   confirmAccount: (code: string) => Promise<void>;
   signOut: () => Promise<void>;
 };
@@ -76,7 +76,7 @@ export function useAuthProvider() {
     }
   }, [syncUser]);
 
-  const handleSignUp = useCallback(async (email: string, password: string, name: string) => {
+  const handleSignUp = useCallback(async (email: string, password: string, name: string): Promise<boolean> => {
     setError(null);
     try {
       const { isSignUpComplete, nextStep } = await signUp({
@@ -87,11 +87,13 @@ export function useAuthProvider() {
       if (isSignUpComplete) {
         await signIn({ username: email, password });
         await syncUser();
+        return true;
       } else if (nextStep?.signUpStep === 'CONFIRM_SIGN_UP') {
         setNeedsConfirmation(true);
         setPendingEmail(email);
         setPendingPassword(password);
       }
+      return false;
     } catch (e: any) {
       setError(e.message || 'Error al registrarse');
       throw e;

@@ -21,8 +21,8 @@ export default function RegisterPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      await signUp(email, password, name);
-      if (!needsConfirmation) router.replace('/dashboard');
+      const completed = await signUp(email, password, name);
+      if (completed) router.replace('/dashboard');
     } catch {
       // error handled by useAuth
     } finally {

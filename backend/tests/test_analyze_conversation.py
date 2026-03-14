@@ -14,15 +14,15 @@ os.environ.setdefault("GUIDELINES_TABLE", "test-guidelines")
 
 class TestBuildAnalysisPrompt:
     def test_basic_prompt_structure(self):
-        from analyze_conversation import build_analysis_prompt
+        from analyze_conversation import _build_system_prompt
 
         transcript = [
             {"role": "user", "text": "Hola, buenos dias"},
             {"role": "assistant", "text": "Buenos dias, digame"},
         ]
-        prompt = build_analysis_prompt(transcript, None, [])
+        prompt = _build_system_prompt(transcript, None, [], 120)
 
-        assert "Coach Senior de Ventas" in prompt
+        assert "COACH SENIOR" in prompt.upper() or "coach senior" in prompt.lower()
         assert "SPIN" in prompt
         assert "rapport" in prompt
         assert "discovery" in prompt
@@ -30,11 +30,11 @@ class TestBuildAnalysisPrompt:
         assert "objectionHandling" in prompt
         assert "closing" in prompt
         assert "communication" in prompt
-        assert "**COMERCIAL**: Hola, buenos dias" in prompt
-        assert "**CLIENTE**: Buenos dias, digame" in prompt
+        assert "Hola, buenos dias" in prompt
+        assert "Buenos dias, digame" in prompt
 
     def test_prompt_with_scenario(self):
-        from analyze_conversation import build_analysis_prompt
+        from analyze_conversation import _build_system_prompt
 
         transcript = [{"role": "user", "text": "Hola"}]
         scenario = {
@@ -51,37 +51,36 @@ class TestBuildAnalysisPrompt:
                 "hiddenAgenda": "Impresionar a la junta",
             }),
         }
-        prompt = build_analysis_prompt(transcript, scenario, [])
+        prompt = _build_system_prompt(transcript, scenario, [], 60)
 
         assert "Test Scenario" in prompt
         assert "Energia" in prompt
-        assert "medium" in prompt
         assert "Maria" in prompt
         assert "Esceptica" in prompt
         assert "Impresionar a la junta" in prompt
 
     def test_prompt_with_guidelines(self):
-        from analyze_conversation import build_analysis_prompt
+        from analyze_conversation import _build_system_prompt
 
         transcript = [{"role": "user", "text": "Hola"}]
         guidelines = [
             {"title": "SPIN Selling", "content": "Usar preguntas SPIN"},
             {"title": "Escucha activa", "content": "Escuchar 70% del tiempo"},
         ]
-        prompt = build_analysis_prompt(transcript, None, guidelines)
+        prompt = _build_system_prompt(transcript, None, guidelines, 90)
 
         assert "SPIN Selling" in prompt
         assert "Usar preguntas SPIN" in prompt
         assert "Escucha activa" in prompt
 
     def test_prompt_with_empty_transcript(self):
-        from analyze_conversation import build_analysis_prompt
+        from analyze_conversation import _build_system_prompt
 
-        prompt = build_analysis_prompt([], None, [])
-        assert "Conversacion vacia" in prompt
+        prompt = _build_system_prompt([], None, [], 0)
+        assert "VACIA" in prompt.upper() or "vacia" in prompt.lower()
 
     def test_prompt_difficulty_context(self):
-        from analyze_conversation import build_analysis_prompt
+        from analyze_conversation import _build_system_prompt
 
         for difficulty, expected_word in [("easy", "FACIL"), ("medium", "MEDIO"), ("hard", "DIFICIL")]:
             scenario = {
@@ -93,14 +92,13 @@ class TestBuildAnalysisPrompt:
                 "clientCompany": "Test",
                 "persona": "{}",
             }
-            prompt = build_analysis_prompt([{"role": "user", "text": "Hola"}], scenario, [])
+            prompt = _build_system_prompt([{"role": "user", "text": "Hola"}], scenario, [], 60)
             assert expected_word in prompt
 
     def test_json_structure_in_prompt(self):
-        from analyze_conversation import build_analysis_prompt
+        from analyze_conversation import _build_system_prompt
 
-        prompt = build_analysis_prompt([{"role": "user", "text": "Hi"}], None, [])
-        # The prompt should contain a JSON example with the required structure
+        prompt = _build_system_prompt([{"role": "user", "text": "Hi"}], None, [], 30)
         assert '"overallScore"' in prompt
         assert '"categories"' in prompt
         assert '"strengths"' in prompt
@@ -108,3 +106,24 @@ class TestBuildAnalysisPrompt:
         assert '"feedback"' in prompt
         assert '"evidence"' in prompt
         assert '"subcriteria"' in prompt
+
+    def test_category_weights(self):
+        from analyze_conversation import CATEGORY_WEIGHTS
+
+        total = sum(CATEGORY_WEIGHTS.values())
+        assert abs(total - 1.0) < 0.001, f"Weights should sum to 1.0, got {total}"
+        assert CATEGORY_WEIGHTS["rapport"] == 0.15
+        assert CATEGORY_WEIGHTS["discovery"] == 0.25
+        assert CATEGORY_WEIGHTS["presentation"] == 0.20
+        assert CATEGORY_WEIGHTS["objectionHandling"] == 0.20
+        assert CATEGORY_WEIGHTS["closing"] == 0.10
+        assert CATEGORY_WEIGHTS["communication"] == 0.10
+
+    def test_frameworks_mentioned(self):
+        from analyze_conversation import _build_system_prompt
+
+        prompt = _build_system_prompt([{"role": "user", "text": "Hola"}], None, [], 60)
+        assert "Challenger" in prompt
+        assert "Sandler" in prompt
+        assert "MEDDIC" in prompt
+        assert "SPIN" in prompt

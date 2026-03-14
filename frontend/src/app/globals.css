@@ -178,6 +178,23 @@ body {
   background-size: 24px 24px;
 }
 
+/* Correcciones de contraste WCAG 2.1 AA */
+/* slate-500 (#64748B) sobre slate-900 (#0F172A) = 3.57:1 — insuficiente para texto pequeño */
+/* Usar slate-400 (#94A3B8) como mínimo para texto pequeño legible = 5.08:1 */
+.text-readable {
+  color: #94A3B8;
+}
+
+/* Transiciones de página */
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.page-enter {
+  animation: pageEnter 0.3s ease-out;
+}
+
 /* Better text selection */
 ::selection {
   background: rgba(59, 130, 246, 0.3);

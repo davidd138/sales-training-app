@@ -17,7 +17,7 @@ export function Input({ label, hint, className = '', ...props }: InputProps) {
         className={`w-full px-3.5 py-2.5 bg-slate-700/80 border border-slate-600/80 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all hover:border-slate-500 ${className}`}
         {...props}
       />
-      {hint && <p id={hintId} className="text-xs text-slate-500 mt-1">{hint}</p>}
+      {hint && <p id={hintId} className="text-xs text-slate-400 mt-1">{hint}</p>}
     </div>
   );
 }
@@ -37,7 +37,7 @@ export function Textarea({ label, hint, className = '', ...props }: TextareaProp
         className={`w-full px-3.5 py-2.5 bg-slate-700/80 border border-slate-600/80 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all hover:border-slate-500 resize-none ${className}`}
         {...props}
       />
-      {hint && <p id={hintId} className="text-xs text-slate-500 mt-1">{hint}</p>}
+      {hint && <p id={hintId} className="text-xs text-slate-400 mt-1">{hint}</p>}
     </div>
   );
 }

@@ -14,7 +14,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <Sidebar />
       <div className="md:ml-64 min-h-screen flex flex-col">
         <Topbar />
-        <main id="main-content" className="flex-1 p-4 sm:p-6 bg-pattern"><ErrorBoundary>{children}</ErrorBoundary></main>
+        <main id="main-content" className="flex-1 p-4 sm:p-6 bg-pattern page-enter"><ErrorBoundary>{children}</ErrorBoundary></main>
         <footer className="border-t border-slate-700/50 px-4 sm:px-6 py-3 flex items-center justify-between text-xs text-slate-500">
           <span>SalesPulse AI v1.0 — Entrenamiento de ventas con IA</span>
           <span className="hidden sm:inline">Potenciado por OpenAI + Claude</span>

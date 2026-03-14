@@ -158,3 +158,82 @@ class TestCheckAdminAccess:
         }
         user = check_admin_access(event)
         assert user["role"] == "admin"
+
+
+class TestAccessPeriodValidation:
+    """Test temporal access window validation."""
+
+    @patch('auth_helpers.users_table')
+    def test_active_user_within_period_passes(self, mock_table):
+        from auth_helpers import check_user_access
+        now = datetime.now(timezone.utc)
+        mock_table.get_item.return_value = {
+            'Item': {
+                'userId': 'u1',
+                'role': 'rep',
+                'status': 'active',
+                'validFrom': (now - timedelta(days=1)).isoformat(),
+                'validUntil': (now + timedelta(days=30)).isoformat(),
+            }
+        }
+        # Should not raise
+        user = check_user_access('u1')
+        assert user['status'] == 'active'
+
+    @patch('auth_helpers.users_table')
+    def test_expired_user_raises(self, mock_table):
+        from auth_helpers import check_user_access
+        now = datetime.now(timezone.utc)
+        mock_table.get_item.return_value = {
+            'Item': {
+                'userId': 'u1',
+                'role': 'rep',
+                'status': 'active',
+                'validFrom': (now - timedelta(days=60)).isoformat(),
+                'validUntil': (now - timedelta(days=1)).isoformat(),
+            }
+        }
+        mock_table.update_item.return_value = {}
+        with pytest.raises(Exception, match="expired"):
+            check_user_access('u1')
+
+    @patch('auth_helpers.users_table')
+    def test_future_valid_from_raises(self, mock_table):
+        from auth_helpers import check_user_access
+        now = datetime.now(timezone.utc)
+        mock_table.get_item.return_value = {
+            'Item': {
+                'userId': 'u1',
+                'role': 'rep',
+                'status': 'active',
+                'validFrom': (now + timedelta(days=5)).isoformat(),
+                'validUntil': (now + timedelta(days=30)).isoformat(),
+            }
+        }
+        with pytest.raises(Exception, match="not started"):
+            check_user_access('u1')
+
+    @patch('auth_helpers.users_table')
+    def test_pending_user_raises(self, mock_table):
+        from auth_helpers import check_user_access
+        mock_table.get_item.return_value = {
+            'Item': {'userId': 'u1', 'role': 'rep', 'status': 'pending'}
+        }
+        with pytest.raises(Exception, match="pending"):
+            check_user_access('u1')
+
+    @patch('auth_helpers.users_table')
+    def test_suspended_user_raises(self, mock_table):
+        from auth_helpers import check_user_access
+        mock_table.get_item.return_value = {
+            'Item': {'userId': 'u1', 'role': 'rep', 'status': 'suspended'}
+        }
+        with pytest.raises(Exception, match="suspended"):
+            check_user_access('u1')
+
+    @patch('auth_helpers.users_table')
+    def test_user_not_found_raises(self, mock_table):
+        from auth_helpers import check_user_access
+        mock_table.get_item.return_value = {}
+        with pytest.raises(Exception, match="not found"):
+            check_user_access('nonexistent')

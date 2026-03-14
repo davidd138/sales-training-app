@@ -33,8 +33,8 @@ export const GET_ANALYTICS = /* GraphQL */ `
   query GetAnalytics {
     getAnalytics {
       totalSessions avgOverallScore avgRapport avgDiscovery avgPresentation
-      avgObjectionHandling avgClosing teamAvgOverallScore teamAvgRapport
-      teamAvgDiscovery teamAvgPresentation teamAvgObjectionHandling teamAvgClosing
+      avgObjectionHandling avgClosing avgCommunication teamAvgOverallScore teamAvgRapport
+      teamAvgDiscovery teamAvgPresentation teamAvgObjectionHandling teamAvgClosing teamAvgCommunication
       recentScores { conversationId overallScore date scenarioName }
       percentile
     }

@@ -81,12 +81,14 @@ type Analytics {
   avgPresentation: Int
   avgObjectionHandling: Int
   avgClosing: Int
+  avgCommunication: Int
   teamAvgOverallScore: Int
   teamAvgRapport: Int
   teamAvgDiscovery: Int
   teamAvgPresentation: Int
   teamAvgObjectionHandling: Int
   teamAvgClosing: Int
+  teamAvgCommunication: Int
   recentScores: [RecentScore!]
   percentile: Int
 }

@@ -5,7 +5,7 @@ from auth_helpers import check_user_access
 scores_table = boto3.resource("dynamodb").Table(os.environ["SCORES_TABLE"])
 conversations_table = boto3.resource("dynamodb").Table(os.environ["CONVERSATIONS_TABLE"])
 
-CATEGORIES = ["rapport", "discovery", "presentation", "objectionHandling", "closing"]
+CATEGORIES = ["rapport", "discovery", "presentation", "objectionHandling", "closing", "communication"]
 
 
 def handler(event, context):

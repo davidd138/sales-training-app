@@ -188,10 +188,42 @@ export default function AnalysisPage() {
 
       {s.detailedFeedback && (
         <Card>
-          <h3 className="text-white font-semibold mb-3">Feedback detallado</h3>
+          <h3 className="text-white font-semibold mb-3">Feedback del Coach</h3>
           <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">{s.detailedFeedback}</p>
         </Card>
       )}
+
+      {data?.conversation.transcript && (
+        <Card>
+          <h3 className="text-white font-semibold mb-4">Transcripcion de la conversacion</h3>
+          <div className="space-y-3 max-h-96 overflow-y-auto">
+            {(() => {
+              try {
+                const transcript = JSON.parse(data.conversation.transcript);
+                return transcript.map((entry: any, i: number) => (
+                  <div key={i} className={`flex ${entry.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${
+                      entry.role === 'user'
+                        ? 'bg-primary/10 text-primary border border-primary/20'
+                        : 'bg-slate-700 text-slate-300'
+                    }`}>
+                      <p className="text-[10px] font-semibold mb-0.5 opacity-60">
+                        {entry.role === 'user' ? 'Comercial' : data.conversation.clientName || 'Cliente'}
+                      </p>
+                      {entry.text}
+                    </div>
+                  </div>
+                ));
+              } catch { return <p className="text-slate-500 text-sm">No se pudo cargar la transcripcion.</p>; }
+            })()}
+          </div>
+        </Card>
+      )}
+
+      <div className="flex justify-center gap-3 pb-6">
+        <Button onClick={() => router.push('/scenarios')}>Nuevo entrenamiento</Button>
+        <Button variant="secondary" onClick={() => router.push('/history')}>Ver historial</Button>
+      </div>
     </div>
   );
 }

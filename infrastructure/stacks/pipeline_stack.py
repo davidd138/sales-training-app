@@ -25,14 +25,10 @@ class PipelineStack(cdk.Stack):
                 input=source,
                 install_commands=[
                     "pip install -r infrastructure/requirements.txt",
-                    # Install Node.js 20 for frontend build
                     "n 20",
-                    "cd frontend && npm ci",
+                    "cd frontend && npm ci && npm run build",
                 ],
                 commands=[
-                    # Build frontend static export
-                    "cd frontend && npm run build",
-                    # Synth CDK
                     "cd infrastructure && npx cdk synth",
                 ],
                 primary_output_directory="infrastructure/cdk.out",

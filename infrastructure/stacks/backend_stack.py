@@ -50,13 +50,8 @@ class BackendStack(cdk.Stack):
             ),
         )
 
-        # ---- Cognito Admin Group ----
-        cognito.CfnUserPoolGroup(
-            self, "AdminsGroup",
-            user_pool_id=user_pool.user_pool_id,
-            group_name="admins",
-            description="Administrator users (professors)",
-        )
+        # Note: 'admins' Cognito group created manually via AWS CLI
+        # (CfnUserPoolGroup conflicts with existing group)
 
         user_pool_client = user_pool.add_client(
             "AppClient",

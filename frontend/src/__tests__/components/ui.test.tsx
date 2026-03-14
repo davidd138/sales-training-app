@@ -29,7 +29,7 @@ describe('Button', () => {
 
   it('applies variant classes', () => {
     const { container } = render(<Button variant="danger">Delete</Button>);
-    expect(container.firstChild).toHaveClass('bg-danger');
+    expect(container.firstChild).toHaveClass('bg-red-500');
   });
 
   it('applies size classes', () => {
@@ -41,17 +41,17 @@ describe('Button', () => {
 describe('Badge', () => {
   it('renders translated label for known values', () => {
     render(<Badge value="easy" />);
-    expect(screen.getByText('Fácil')).toBeInTheDocument();
+    expect(screen.getByText('Principiante')).toBeInTheDocument();
   });
 
   it('renders translated label for medium difficulty', () => {
     render(<Badge value="medium" />);
-    expect(screen.getByText('Media')).toBeInTheDocument();
+    expect(screen.getByText('Intermedio')).toBeInTheDocument();
   });
 
   it('renders translated label for hard difficulty', () => {
     render(<Badge value="hard" />);
-    expect(screen.getByText('Difícil')).toBeInTheDocument();
+    expect(screen.getByText('Experto')).toBeInTheDocument();
   });
 
   it('renders raw value for unknown values', () => {

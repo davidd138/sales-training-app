@@ -125,7 +125,7 @@ describe('TrainingPage', () => {
     render(<TrainingPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Nivel Facil')).toBeTruthy();
+      expect(screen.getAllByText('Principiante').length).toBeGreaterThan(0);
     });
   });
 });

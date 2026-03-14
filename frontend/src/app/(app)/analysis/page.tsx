@@ -194,6 +194,7 @@ export default function AnalysisPage() {
           {CATEGORIES.map(({ key, label, weight, icon }) => {
             const val = (s[key as keyof Score] as number) || 0;
             const details = categoryDetails?.[key];
+            const subcriteria = details?.subcriteria;
             return (
               <div key={key} className="group">
                 <div className="flex items-center justify-between text-sm mb-2">
@@ -215,6 +216,19 @@ export default function AnalysisPage() {
                 )}
                 {details?.evidence && (
                   <p className="text-xs text-slate-500 mt-0.5 pl-7 italic">&quot;{details.evidence}&quot;</p>
+                )}
+                {subcriteria && Object.keys(subcriteria).length > 0 && (
+                  <div className="mt-2 pl-7 grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                    {Object.entries(subcriteria).map(([subKey, subVal]) => (
+                      <div key={subKey} className="flex items-center gap-1.5 text-[11px]">
+                        <div className="w-8 h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                          <div className={`h-full rounded-full ${scoreBgBar(subVal as number)}`} style={{ width: `${subVal}%` }} />
+                        </div>
+                        <span className={`${scoreColor(subVal as number)} font-medium`}>{Math.round(subVal as number)}</span>
+                        <span className="text-slate-500 truncate">{subKey}</span>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
             );

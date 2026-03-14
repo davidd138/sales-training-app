@@ -41,7 +41,7 @@ export function Sidebar() {
       <div className="p-5 border-b border-slate-700/50">
         <Logo size="md" />
       </div>
-      <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+      <nav role="navigation" className="flex-1 p-3 space-y-1 overflow-y-auto">
         <p className="px-3 pt-2 pb-2 text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Menu</p>
         {NAV_ITEMS.map(({ href, label, icon }) => {
           const active = pathname.startsWith(href);
@@ -49,6 +49,7 @@ export function Sidebar() {
             <Link
               key={href}
               href={href}
+              aria-current={active ? 'page' : undefined}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                 active
                   ? 'bg-gradient-to-r from-blue-500/15 to-cyan-500/10 text-blue-400 border border-blue-500/20'
@@ -75,6 +76,7 @@ export function Sidebar() {
                 <Link
                   key={href}
                   href={href}
+                  aria-current={active ? 'page' : undefined}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                     active
                       ? 'bg-gradient-to-r from-amber-500/15 to-orange-500/10 text-amber-400 border border-amber-500/20'
@@ -114,7 +116,7 @@ export function Sidebar() {
       </button>
 
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex fixed left-0 top-0 h-full w-64 bg-slate-800/95 backdrop-blur-sm border-r border-slate-700/50 flex-col z-30">
+      <aside aria-label="Menu de navegacion principal" className="hidden md:flex fixed left-0 top-0 h-full w-64 bg-slate-800/95 backdrop-blur-sm border-r border-slate-700/50 flex-col z-30">
         {sidebarContent}
       </aside>
 
@@ -122,7 +124,7 @@ export function Sidebar() {
       {mobileOpen && (
         <div className="md:hidden fixed inset-0 z-50">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
-          <aside className="absolute left-0 top-0 h-full w-72 bg-slate-800 border-r border-slate-700/50 flex flex-col animate-slide-in shadow-2xl">
+          <aside aria-label="Menu de navegacion" className="absolute left-0 top-0 h-full w-72 bg-slate-800 border-r border-slate-700/50 flex flex-col animate-slide-in shadow-2xl">
             <button
               onClick={() => setMobileOpen(false)}
               className="absolute top-4 right-4 w-8 h-8 rounded-lg bg-slate-700 flex items-center justify-center"

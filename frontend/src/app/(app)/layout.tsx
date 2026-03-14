@@ -3,6 +3,7 @@
 import { AuthGuard } from '@/components/layout/AuthGuard';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Topbar } from '@/components/layout/Topbar';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -10,7 +11,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <Sidebar />
       <div className="md:ml-64 min-h-screen flex flex-col">
         <Topbar />
-        <main className="flex-1 p-4 sm:p-6">{children}</main>
+        <main className="flex-1 p-4 sm:p-6"><ErrorBoundary>{children}</ErrorBoundary></main>
         <footer className="border-t border-slate-700/50 px-4 sm:px-6 py-3 flex items-center justify-between text-xs text-slate-500">
           <span>SalesPulse AI — Entrenamiento de ventas con IA</span>
           <span>Potenciado por OpenAI + Claude</span>

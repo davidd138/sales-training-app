@@ -454,6 +454,7 @@ export default function TrainingPage() {
 
         <button
           onClick={handleHangUp}
+          aria-label="Colgar llamada"
           className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-red-500 hover:bg-red-600 transition-all flex items-center justify-center shadow-lg shadow-red-500/25 hover:shadow-xl hover:shadow-red-500/30 hover:scale-105"
         >
           <svg className="w-6 h-6 sm:w-7 sm:h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -473,7 +474,7 @@ export default function TrainingPage() {
           </h3>
           <span className="text-[10px] text-slate-500 font-mono">{training.transcript.length} msgs</span>
         </div>
-        <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-2 sm:space-y-3">
+        <div role="log" aria-live="polite" className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-2 sm:space-y-3">
           {training.transcript.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full">
               <svg className="w-8 h-8 text-slate-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>

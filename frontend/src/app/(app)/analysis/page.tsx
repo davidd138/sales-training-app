@@ -3,12 +3,12 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useQuery, useMutation } from '@/hooks/useGraphQL';
-import { GET_CONVERSATION } from '@/lib/graphql/queries';
+import { GET_CONVERSATION, LIST_SCENARIOS } from '@/lib/graphql/queries';
 import { ANALYZE_CONVERSATION } from '@/lib/graphql/mutations';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
-import type { Score, Conversation } from '@/types';
+import type { Score, Conversation, Scenario } from '@/types';
 
 function scoreColor(score: number) {
   if (score >= 80) return 'text-emerald-400';
@@ -28,6 +28,101 @@ function scoreBgBar(score: number) {
   return 'bg-gradient-to-r from-red-500 to-red-400';
 }
 
+function difficultyBadge(difficulty: string) {
+  switch (difficulty) {
+    case 'easy':
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">
+          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75" />
+          </svg>
+          Facil
+        </span>
+      );
+    case 'medium':
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-400 border border-amber-500/20">
+          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12" />
+          </svg>
+          Intermedio
+        </span>
+      );
+    case 'hard':
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-500/15 text-red-400 border border-red-500/20">
+          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126Z" />
+          </svg>
+          Dificil
+        </span>
+      );
+    default:
+      return null;
+  }
+}
+
+const ANALYSIS_STEPS = [
+  { icon: '📖', text: 'Leyendo transcripcion...' },
+  { icon: '🔬', text: 'Evaluando categorias SPIN...' },
+  { icon: '✍️', text: 'Generando feedback...' },
+];
+
+function AnalysisLoadingSteps() {
+  const [step, setStep] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setStep((prev) => (prev + 1) % ANALYSIS_STEPS.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="flex flex-col items-center justify-center h-[60vh] gap-6 animate-fade-in">
+      <div className="relative">
+        <div className="w-20 h-20 rounded-full border-4 border-slate-700 border-t-cyan-400 animate-spin" />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <svg className="w-8 h-8 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 0 1-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 0 1 4.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0 1 12 15a9.065 9.065 0 0 0-6.23.693L5 14.5m14.8.8 1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0 1 12 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5" />
+          </svg>
+        </div>
+      </div>
+      <div className="text-center">
+        <p className="text-white font-semibold text-lg mb-4">Analizando tu conversacion</p>
+        <div className="space-y-3 w-72">
+          {ANALYSIS_STEPS.map((s, i) => (
+            <div
+              key={i}
+              className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-500 ${
+                i === step
+                  ? 'bg-cyan-500/10 border border-cyan-500/30 scale-105'
+                  : i < step
+                  ? 'bg-slate-700/30 border border-slate-700/30 opacity-50'
+                  : 'bg-slate-800/30 border border-slate-700/20 opacity-30'
+              }`}
+            >
+              <span className="text-lg">{s.icon}</span>
+              <span className={`text-sm font-medium ${
+                i === step ? 'text-cyan-300' : 'text-slate-400'
+              }`}>
+                {s.text}
+              </span>
+              {i === step && (
+                <div className="ml-auto flex gap-0.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const CATEGORIES = [
   { key: 'rapport', label: 'Apertura y Rapport', weight: '15%', icon: '🤝' },
   { key: 'discovery', label: 'Descubrimiento (SPIN)', weight: '25%', icon: '🔍' },
@@ -45,6 +140,7 @@ export default function AnalysisPage() {
     conversation: Conversation;
     score: Score | null;
   }>(GET_CONVERSATION);
+  const { data: scenarios, execute: loadScenarios } = useQuery<Scenario[]>(LIST_SCENARIOS);
   const analyzeMutation = useMutation<Score>(ANALYZE_CONVERSATION);
   const [analyzing, setAnalyzing] = useState(false);
   const [score, setScore] = useState<Score | null>(null);
@@ -54,6 +150,7 @@ export default function AnalysisPage() {
     loadConversation({ id: conversationId }).then(result => {
       if (result?.score) setScore(result.score);
     });
+    loadScenarios();
   }, [conversationId]);
 
   useEffect(() => {
@@ -75,7 +172,23 @@ export default function AnalysisPage() {
     }
   }
 
+  async function handleReanalyze() {
+    setScore(null);
+    setAnalyzing(true);
+    try {
+      const s = await analyzeMutation.execute({ conversationId });
+      if (s) setScore(s);
+    } finally {
+      setAnalyzing(false);
+    }
+  }
+
   const displayScore = score || data?.score;
+
+  // Find the matching scenario to get difficulty
+  const matchedScenario = scenarios?.find(
+    (sc) => sc.id === data?.conversation.scenarioId
+  );
 
   if (loading && !data) {
     return (
@@ -87,22 +200,7 @@ export default function AnalysisPage() {
   }
 
   if (analyzing || (!displayScore && !analyzeMutation.error)) {
-    return (
-      <div className="flex flex-col items-center justify-center h-[60vh] gap-6 animate-fade-in">
-        <div className="relative">
-          <div className="w-20 h-20 rounded-full border-4 border-slate-700 border-t-cyan-400 animate-spin" />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <svg className="w-8 h-8 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 0 1-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 0 1 4.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0 1 12 15a9.065 9.065 0 0 0-6.23.693L5 14.5m14.8.8 1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0 1 12 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5" />
-            </svg>
-          </div>
-        </div>
-        <div className="text-center">
-          <p className="text-white font-semibold text-lg">Analizando tu conversacion</p>
-          <p className="text-slate-400 text-sm mt-1">La IA esta evaluando tu rendimiento...</p>
-        </div>
-      </div>
-    );
+    return <AnalysisLoadingSteps />;
   }
 
   if (analyzeMutation.error && !displayScore) {
@@ -141,16 +239,29 @@ export default function AnalysisPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="animate-slide-up">
           <h1 className="text-2xl sm:text-3xl font-bold gradient-text">Analisis de sesion</h1>
-          <p className="text-slate-400 text-sm mt-1">{data?.conversation.scenarioName}</p>
+          <div className="flex items-center gap-3 mt-1.5">
+            <p className="text-slate-400 text-sm">{data?.conversation.scenarioName}</p>
+            {matchedScenario && difficultyBadge(matchedScenario.difficulty)}
+          </div>
         </div>
-        <Button variant="secondary" onClick={() => router.push('/history')}>
-          <span className="flex items-center gap-2">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
-            </svg>
-            Volver al historial
-          </span>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="secondary" onClick={handleReanalyze} disabled={analyzing}>
+            <span className="flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182" />
+              </svg>
+              Re-analizar
+            </span>
+          </Button>
+          <Button variant="secondary" onClick={() => router.push('/history')}>
+            <span className="flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+              </svg>
+              Volver al historial
+            </span>
+          </Button>
+        </div>
       </div>
 
       {/* Score Ring */}

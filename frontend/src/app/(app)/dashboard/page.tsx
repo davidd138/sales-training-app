@@ -25,6 +25,40 @@ function scoreGradient(score: number): 'emerald' | 'amber' | 'blue' {
   return 'blue';
 }
 
+const DAILY_TIPS = [
+  'El 80% de las ventas requieren 5 seguimientos. La mayoria de los comerciales abandonan despues del primero.',
+  'Los mejores vendedores escuchan el 70% del tiempo y hablan solo el 30%.',
+  'Cada objecion es una oportunidad disfrazada. El cliente que objeta esta interesado.',
+  'Las preguntas de Implicacion (SPIN) son las que mas impacto tienen en el cierre.',
+  'Un "no" de hoy puede ser un "si" manana. El timing lo es todo en ventas.',
+  'Los clientes compran soluciones a sus problemas, no productos ni servicios.',
+  'La confianza se construye con consistencia, no con un unico gesto grande.',
+  'Personaliza cada interaccion. Los clientes notan cuando les tratas como un numero mas.',
+  'El silencio es una herramienta poderosa. No temas las pausas tras una pregunta importante.',
+  'Prepara cada llamada: investiga al cliente, su sector y sus posibles necesidades.',
+  'Las historias venden mas que los datos. Usa casos de exito para ilustrar el valor.',
+  'El mejor momento para pedir una referencia es justo despues de entregar valor.',
+  'No vendas caracteristicas, vende la transformacion que el cliente experimentara.',
+  'La urgencia real funciona mejor que la urgencia artificial. Encuentra el motivo genuino.',
+  'Dominar la escucha activa te diferencia del 90% de los comerciales.',
+  'Las primeras impresiones se forman en 7 segundos. Cuida tu apertura.',
+  'Haz preguntas abiertas para descubrir necesidades ocultas del cliente.',
+  'El seguimiento puntual demuestra profesionalidad y compromiso.',
+  'Adapta tu estilo de comunicacion al perfil de tu interlocutor.',
+  'Celebra los pequenos avances. Cada conversacion es una oportunidad de aprendizaje.',
+  'Un buen CRM es tu mejor aliado. Registra cada interaccion sin excepcion.',
+  'La venta consultiva genera relaciones a largo plazo, no solo transacciones.',
+  'Conoce a tu competencia, pero enfocate en tu propuesta de valor unica.',
+  'El rechazo no es personal. Cada "no" te acerca al siguiente "si".',
+  'Practica tu pitch hasta que suene natural, no ensayado.',
+  'Los compradores B2B valoran a los vendedores que entienden su negocio.',
+  'Establece expectativas claras desde el principio para evitar sorpresas.',
+  'La empatia genuina no se puede fingir. Interesate de verdad por tu cliente.',
+  'Mide tus resultados semanalmente y ajusta tu estrategia segun los datos.',
+  'El networking es una inversion a largo plazo. Cultiva relaciones sin esperar retorno inmediato.',
+  'Termina cada llamada con un siguiente paso concreto acordado con el cliente.',
+];
+
 export default function DashboardPage() {
   const { user } = useAuth();
   const router = useRouter();
@@ -235,6 +269,18 @@ export default function DashboardPage() {
             ))}
           </div>
         )}
+      </div>
+      {/* Tip del dia */}
+      <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-4 flex items-start gap-3">
+        <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0 mt-0.5">
+          <svg className="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
+          </svg>
+        </div>
+        <div>
+          <p className="text-xs font-semibold text-amber-400 uppercase tracking-wider mb-1">Tip del dia</p>
+          <p className="text-sm text-slate-300">{DAILY_TIPS[new Date().getDate() % DAILY_TIPS.length]}</p>
+        </div>
       </div>
     </div>
   );

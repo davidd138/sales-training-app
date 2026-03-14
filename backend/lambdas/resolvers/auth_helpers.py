@@ -50,6 +50,24 @@ def check_user_access(user_id: str) -> dict:
     return user
 
 
+def _get_groups_from_event(event: dict) -> list:
+    """Extract Cognito groups from the AppSync identity object.
+
+    AppSync passes groups in different places depending on auth mode:
+    - identity.claims["cognito:groups"] (most common)
+    - identity.groups (some configurations)
+    """
+    identity = event.get("identity", {})
+    claims = identity.get("claims", {})
+
+    groups = claims.get("cognito:groups", [])
+    if not groups:
+        groups = identity.get("groups", [])
+    if isinstance(groups, str):
+        groups = [groups]
+    return groups
+
+
 def check_admin_access(event: dict) -> dict:
     """Check that the caller is an admin user.
 
@@ -58,21 +76,19 @@ def check_admin_access(event: dict) -> dict:
     """
     identity = event.get("identity", {})
     user_id = identity.get("sub", "")
-    claims = identity.get("claims", {})
 
-    # Check Cognito groups from token claims
-    groups = claims.get("cognito:groups", [])
-    if isinstance(groups, str):
-        groups = [groups]
+    groups = _get_groups_from_event(event)
 
-    if "admins" not in groups:
-        # Fallback: check user table
-        user = users_table.get_item(Key={"userId": user_id}).get("Item")
-        if not user or user.get("role") != "admin":
-            raise Exception("Access denied: admin privileges required")
-        return user
+    # Primary check: Cognito groups
+    is_admin_by_group = "admins" in groups
 
+    # Get user from DB
     user = users_table.get_item(Key={"userId": user_id}).get("Item")
     if not user:
         raise Exception("Access denied: user not found")
+
+    # Check admin access via Cognito group OR user role in DB
+    if not is_admin_by_group and user.get("role") != "admin":
+        raise Exception("Access denied: admin privileges required")
+
     return user

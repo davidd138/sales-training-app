@@ -25,7 +25,8 @@ export function useQuery<T = any>(query: string) {
       setData(d[key]);
       return d[key] as T;
     } catch (e: any) {
-      setError(e.message || 'Error');
+      const msg = e?.errors?.[0]?.message || e?.message || 'Error';
+      setError(msg);
       throw e;
     } finally {
       setLoading(false);
@@ -48,7 +49,8 @@ export function useMutation<T = any>(mutation: string) {
       const key = Object.keys(d)[0];
       return d[key] as T;
     } catch (e: any) {
-      setError(e.message || 'Error');
+      const msg = e?.errors?.[0]?.message || e?.message || 'Error';
+      setError(msg);
       throw e;
     } finally {
       setLoading(false);

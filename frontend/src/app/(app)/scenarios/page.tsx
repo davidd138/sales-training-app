@@ -15,7 +15,7 @@ export default function ScenariosPage() {
   const router = useRouter();
   const { data, loading, execute } = useQuery<Scenario[]>(LIST_SCENARIOS);
 
-  useEffect(() => { execute(); }, []);
+  useEffect(() => { execute().catch(() => {}); }, []);
 
   const scenarios = [...(data || [])].sort((a, b) =>
     (DIFFICULTY_ORDER[a.difficulty] || 0) - (DIFFICULTY_ORDER[b.difficulty] || 0)

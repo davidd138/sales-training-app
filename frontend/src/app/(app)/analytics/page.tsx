@@ -28,8 +28,8 @@ export default function AnalyticsPage() {
   const leaderboard = useQuery<{ entries: LeaderboardEntry[] }>(GET_LEADERBOARD);
 
   useEffect(() => {
-    analytics.execute();
-    leaderboard.execute();
+    analytics.execute().catch(() => {});
+    leaderboard.execute().catch(() => {});
   }, []);
 
   const a = analytics.data;

@@ -23,7 +23,7 @@ export default function HistoryPage() {
     }
   }, [execute]);
 
-  useEffect(() => { loadMore(); }, []);
+  useEffect(() => { loadMore().catch(() => {}); }, []);
 
   return (
     <div className="max-w-4xl mx-auto">

@@ -59,6 +59,28 @@ function AnalyticsContent() {
   const avgScore = entries.length > 0 ? Math.round(entries.reduce((sum: number, e: LeaderboardEntry) => sum + e.avgScore, 0) / entries.length) : 0;
   const bestScore = entries.length > 0 ? Math.max(...entries.map((e: LeaderboardEntry) => e.avgScore)) : 0;
 
+  const avgSessionsPerUser = useMemo(() => {
+    if (entries.length === 0) return 0;
+    return Math.round((totalSessions / entries.length) * 10) / 10;
+  }, [entries, totalSessions]);
+
+  const mostImprovedUser = useMemo(() => {
+    if (entries.length < 2) return null;
+    // El usuario con mayor diferencia positiva entre su puntuacion y la media global
+    // indica mayor progreso relativo al equipo
+    const sorted = [...entries].sort((a, b) => {
+      const diffA = a.avgScore - avgScore;
+      const diffB = b.avgScore - avgScore;
+      // Priorizar usuarios con mas sesiones (mas datos = mas fiable)
+      const weightA = diffA * Math.min(a.totalSessions, 10);
+      const weightB = diffB * Math.min(b.totalSessions, 10);
+      return weightB - weightA;
+    });
+    // Filtrar usuarios con al menos 2 sesiones para tener datos significativos
+    const candidates = sorted.filter(e => e.totalSessions >= 2);
+    return candidates.length > 0 ? candidates[0] : sorted[0];
+  }, [entries, avgScore]);
+
   const summary = useMemo(() => {
     if (entries.length === 0) return null;
     const bestEntry = entries.reduce((best, e) => e.avgScore > best.avgScore ? e : best, entries[0]);
@@ -162,6 +184,29 @@ function AnalyticsContent() {
           }
         />
       </div>
+
+      {/* Metricas Agregadas */}
+      {entries.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+          <Card className="!p-4 border-l-4 border-l-cyan-500">
+            <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Usuarios Activos este Periodo</p>
+            <p className="text-2xl font-bold text-white">{activeUsers}</p>
+            <p className="text-xs text-slate-500 mt-1">{entries.length} con sesiones registradas</p>
+          </Card>
+          <Card className="!p-4 border-l-4 border-l-indigo-500">
+            <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Media Sesiones por Usuario</p>
+            <p className="text-2xl font-bold text-white">{avgSessionsPerUser}</p>
+            <p className="text-xs text-slate-500 mt-1">{totalSessions} sesiones entre {entries.length} usuarios</p>
+          </Card>
+          {mostImprovedUser && (
+            <Card className="!p-4 border-l-4 border-l-rose-500">
+              <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Mayor Progreso</p>
+              <p className="text-lg font-bold text-white truncate">{mostImprovedUser.name || mostImprovedUser.email}</p>
+              <p className="text-sm text-rose-400 font-semibold">{mostImprovedUser.avgScore} pts / {mostImprovedUser.totalSessions} sesiones</p>
+            </Card>
+          )}
+        </div>
+      )}
 
       {/* Summary Highlights */}
       {summary && (

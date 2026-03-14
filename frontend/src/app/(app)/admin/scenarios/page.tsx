@@ -39,21 +39,20 @@ const EMPTY_PERSONA = {
   objectives: '',
   currentSituation: '',
   communicationStyle: '',
-  decisionMakingStyle: '',
   hiddenAgenda: '',
   buyingSignals: '',
   redLines: '',
 };
 
 const PERSONA_FIELDS = [
-  { key: 'personality', label: 'Personalidad', hint: 'Ej: Esceptica, analitica, quiere datos de ROI...', icon: '🧠' },
-  { key: 'concerns', label: 'Preocupaciones', hint: 'Ej: Fiabilidad del servicio, coste de cambio...', icon: '⚠' },
-  { key: 'objectives', label: 'Objetivos', hint: 'Ej: Reducir costes 20%, certificacion renovable...', icon: '🎯' },
-  { key: 'currentSituation', label: 'Situacion actual', hint: 'Ej: Contrato con proveedor X a punto de expirar...', icon: '📋' },
-  { key: 'communicationStyle', label: 'Estilo de comunicacion', hint: 'Ej: Directo, formal, usa tecnicismos...', icon: '💬' },
-  { key: 'hiddenAgenda', label: 'Agenda oculta', hint: 'Ej: Quiere impresionar a su junta directiva...', icon: '🔒' },
-  { key: 'buyingSignals', label: 'Senales de compra', hint: 'Ej: Reacciona bien a datos de ROI y casos de exito...', icon: '✅' },
-  { key: 'redLines', label: 'Lineas rojas', hint: 'Ej: Se frustra si no le escuchan, odia las ventas agresivas...', icon: '🚫' },
+  { key: 'personality', label: 'Personalidad', hint: 'Ej: Esceptica, analitica, quiere datos de ROI...' },
+  { key: 'concerns', label: 'Preocupaciones', hint: 'Ej: Fiabilidad del servicio, coste de cambio...' },
+  { key: 'objectives', label: 'Objetivos', hint: 'Ej: Reducir costes 20%, certificacion renovable...' },
+  { key: 'currentSituation', label: 'Situacion actual', hint: 'Ej: Contrato con proveedor X a punto de expirar...' },
+  { key: 'communicationStyle', label: 'Estilo de comunicacion', hint: 'Ej: Directo, formal, usa tecnicismos...' },
+  { key: 'hiddenAgenda', label: 'Agenda oculta', hint: 'Ej: Quiere impresionar a su junta directiva...' },
+  { key: 'buyingSignals', label: 'Senales de compra', hint: 'Ej: Reacciona bien a datos de ROI y casos de exito...' },
+  { key: 'redLines', label: 'Lineas rojas', hint: 'Ej: Se frustra si no le escuchan, odia las ventas agresivas...' },
 ];
 
 export default function AdminScenariosPage() {

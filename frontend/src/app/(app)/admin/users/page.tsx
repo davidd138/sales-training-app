@@ -38,7 +38,7 @@ function UsersContent() {
   const [validFrom, setValidFrom] = useState('');
   const [validUntil, setValidUntil] = useState('');
 
-  useEffect(() => { fetchUsers(); }, [fetchUsers]);
+  useEffect(() => { fetchUsers().catch(() => {}); }, [fetchUsers]);
 
   const handleUpdateStatus = useCallback(async (userId: string, status: UserStatus, from?: string, until?: string) => {
     const input: Record<string, string> = { userId, status };

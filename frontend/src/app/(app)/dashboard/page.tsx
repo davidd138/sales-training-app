@@ -26,9 +26,9 @@ export default function DashboardPage() {
   const allUsers = useQuery<{ items: User[] }>(LIST_ALL_USERS);
 
   useEffect(() => {
-    analytics.execute();
-    conversations.execute({ limit: 5 });
-    if (isAdmin) allUsers.execute();
+    analytics.execute().catch(() => {});
+    conversations.execute({ limit: 5 }).catch(() => {});
+    if (isAdmin) allUsers.execute().catch(() => {});
   }, []);
 
   const a = analytics.data;

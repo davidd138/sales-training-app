@@ -15,7 +15,7 @@ def handler(event, context):
 
     try:
         user_id = validate_uuid(args.get("userId", ""), "userId")
-        status = validate_enum(args.get("status", ""), VALID_STATUSES, "status")
+        status = validate_enum(args.get("status", ""), "status", VALID_STATUSES)
     except ValidationError as e:
         raise Exception(str(e))
 

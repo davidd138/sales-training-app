@@ -5,13 +5,13 @@ import { Amplify } from 'aws-amplify';
 const AWS_CONFIG = {
   Auth: {
     Cognito: {
-      userPoolId: 'eu-west-1_PLACEHOLDER',
-      userPoolClientId: 'PLACEHOLDER',
+      userPoolId: 'eu-west-1_79mmqRtMj',
+      userPoolClientId: '5gjo7u3n7kgkc7ui43blushp4f',
     },
   },
   API: {
     GraphQL: {
-      endpoint: 'https://PLACEHOLDER.appsync-api.eu-west-1.amazonaws.com/graphql',
+      endpoint: 'https://iqdkvii7vffotj6cseodclz6l4.appsync-api.eu-west-1.amazonaws.com/graphql',
       defaultAuthMode: 'userPool' as const,
     },
   },

@@ -73,6 +73,12 @@ export default function AnalysisScreen({ route, navigation }: Props) {
         >
           <Text style={styles.retryText}>Reintentar análisis</Text>
         </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.backButton, { marginTop: 24 }]}
+          onPress={() => navigation.navigate('Main')}
+        >
+          <Text style={styles.backButtonText}>Volver al inicio</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -160,7 +166,7 @@ export default function AnalysisScreen({ route, navigation }: Props) {
 
       <TouchableOpacity
         style={styles.backButton}
-        onPress={() => navigation.navigate('Dashboard')}
+        onPress={() => navigation.navigate('Main')}
       >
         <Text style={styles.backButtonText}>Volver al inicio</Text>
       </TouchableOpacity>

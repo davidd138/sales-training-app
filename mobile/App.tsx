@@ -1,12 +1,9 @@
 import React from 'react';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
-import { configureAWS } from './src/config/aws';
 import { useAuth } from './src/hooks/useAuth';
 import AuthScreen from './src/screens/AuthScreen';
 import AppNavigator from './src/navigation/AppNavigator';
-
-configureAWS();
 
 export default function App() {
   const { user, loading, error, signIn, signUp, signOut } = useAuth();

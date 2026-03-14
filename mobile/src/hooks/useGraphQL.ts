@@ -1,7 +1,11 @@
 import { useCallback, useState } from 'react';
 import { generateClient } from 'aws-amplify/api';
 
-const client = generateClient();
+let _client: ReturnType<typeof generateClient> | null = null;
+function getClient() {
+  if (!_client) _client = generateClient();
+  return _client;
+}
 
 // ---- Queries ----
 export const LIST_SCENARIOS = /* GraphQL */ `
@@ -206,7 +210,7 @@ export function useQuery<T = any>(query: string) {
       setLoading(true);
       setError(null);
       try {
-        const result = await client.graphql({ query, variables });
+        const result = await getClient().graphql({ query, variables });
         const d = (result as any).data;
         const key = Object.keys(d)[0];
         setData(d[key]);
@@ -233,7 +237,7 @@ export function useMutation<T = any>(mutation: string) {
       setLoading(true);
       setError(null);
       try {
-        const result = await client.graphql({ query: mutation, variables });
+        const result = await getClient().graphql({ query: mutation, variables });
         const d = (result as any).data;
         const key = Object.keys(d)[0];
         return d[key] as T;

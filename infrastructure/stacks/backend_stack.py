@@ -180,7 +180,16 @@ class BackendStack(cdk.Stack):
             return fn
 
         # ---- Resolvers ----
-        create_resolver("sync_user", "Mutation", "syncUser")
+        sync_user_fn = create_resolver(
+            "sync_user", "Mutation", "syncUser",
+            extra_env={"USER_POOL_ID": user_pool.user_pool_id},
+        )
+        sync_user_fn.add_to_role_policy(
+            iam.PolicyStatement(
+                actions=["cognito-idp:AdminGetUser"],
+                resources=[user_pool.user_pool_arn],
+            )
+        )
         create_resolver("list_scenarios", "Query", "listScenarios")
         create_resolver("create_scenario", "Mutation", "createScenario")
         create_resolver("create_conversation", "Mutation", "createConversation")

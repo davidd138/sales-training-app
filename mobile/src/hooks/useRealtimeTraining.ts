@@ -3,7 +3,11 @@ import { Platform } from 'react-native';
 import { generateClient } from 'aws-amplify/api';
 import { GET_REALTIME_TOKEN } from './useGraphQL';
 
-const client = generateClient();
+let _client: ReturnType<typeof generateClient> | null = null;
+function getClient() {
+  if (!_client) _client = generateClient();
+  return _client;
+}
 const SAMPLE_RATE = 24000;
 const CHANNELS = 1;
 
@@ -50,7 +54,7 @@ export function useRealtimeTraining(scenario: any) {
   const connect = useCallback(async () => {
     setState('connecting');
     try {
-      const result = await client.graphql({ query: GET_REALTIME_TOKEN });
+      const result = await getClient().graphql({ query: GET_REALTIME_TOKEN });
       const { token } = (result as any).data.getRealtimeToken;
 
       // Create AudioContext during user gesture for Safari

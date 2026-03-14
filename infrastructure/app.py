@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 import aws_cdk as cdk
-from stacks.pipeline_stack import PipelineStack
+from stacks.backend_stack import BackendStack
 
 app = cdk.App()
 
-PipelineStack(
+# Deploy backend directly for development
+BackendStack(
     app,
-    "sales-training-pipeline",
+    "sales-training-dev",
+    env_name="dev",
     env=cdk.Environment(
-        account="890742600627",
+        account="008996491306",
         region="eu-west-1",
     ),
 )

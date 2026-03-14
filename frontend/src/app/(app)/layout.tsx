@@ -11,6 +11,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <div className="md:ml-64 min-h-screen flex flex-col">
         <Topbar />
         <main className="flex-1 p-4 sm:p-6">{children}</main>
+        <footer className="border-t border-slate-700/50 px-4 sm:px-6 py-3 flex items-center justify-between text-xs text-slate-500">
+          <span>SalesPulse AI — Entrenamiento de ventas con IA</span>
+          <span>Potenciado por OpenAI + Claude</span>
+        </footer>
       </div>
     </AuthGuard>
   );

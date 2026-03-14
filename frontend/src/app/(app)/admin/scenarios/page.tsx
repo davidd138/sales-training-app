@@ -12,6 +12,7 @@ import { Card } from '@/components/ui/Card';
 import { Input, Textarea } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { useToast } from '@/components/ui/Toast';
 import type { Scenario } from '@/types';
 
 const VOICE_OPTIONS = [
@@ -64,6 +65,7 @@ export default function AdminScenariosPage() {
 }
 
 function ScenariosContent() {
+  const { addToast } = useToast();
   const { data: scenarios, loading, execute: fetchScenarios } = useQuery<Scenario[]>(LIST_SCENARIOS);
   const { execute: createScenario, loading: creating } = useMutation(CREATE_SCENARIO);
   const { execute: updateScenario, loading: updatingScenario } = useMutation(UPDATE_SCENARIO);
@@ -102,25 +104,35 @@ function ScenariosContent() {
   };
 
   const handleSubmit = useCallback(async () => {
-    const input = {
-      ...form,
-      persona: JSON.stringify(form.persona),
-    };
+    try {
+      const input = {
+        ...form,
+        persona: JSON.stringify(form.persona),
+      };
 
-    if (editingId) {
-      await updateScenario({ input: { id: editingId, ...input } });
-    } else {
-      await createScenario({ input });
+      if (editingId) {
+        await updateScenario({ input: { id: editingId, ...input } });
+      } else {
+        await createScenario({ input });
+      }
+      resetForm();
+      fetchScenarios();
+      addToast(editingId ? 'Escenario actualizado correctamente' : 'Escenario creado correctamente');
+    } catch {
+      addToast('Error al guardar escenario', 'error');
     }
-    resetForm();
-    fetchScenarios();
-  }, [form, editingId, createScenario, updateScenario, fetchScenarios]);
+  }, [form, editingId, createScenario, updateScenario, fetchScenarios, addToast]);
 
   const handleDelete = useCallback(async (id: string) => {
     if (!confirm('Seguro que quieres eliminar este escenario?')) return;
-    await deleteScenario({ id });
-    fetchScenarios();
-  }, [deleteScenario, fetchScenarios]);
+    try {
+      await deleteScenario({ id });
+      fetchScenarios();
+      addToast('Escenario eliminado correctamente');
+    } catch {
+      addToast('Error al guardar escenario', 'error');
+    }
+  }, [deleteScenario, fetchScenarios, addToast]);
 
   if (loading && !scenarios) {
     return (

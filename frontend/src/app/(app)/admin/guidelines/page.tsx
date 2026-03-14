@@ -11,6 +11,7 @@ import { Spinner } from '@/components/ui/Spinner';
 import { Card } from '@/components/ui/Card';
 import { Input, Textarea } from '@/components/ui/Input';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { useToast } from '@/components/ui/Toast';
 import type { Guideline } from '@/types';
 
 export default function AdminGuidelinesPage() {
@@ -22,6 +23,7 @@ export default function AdminGuidelinesPage() {
 }
 
 function GuidelinesContent() {
+  const { addToast } = useToast();
   const { data: guidelines, loading, execute: fetchGuidelines } = useQuery<Guideline[]>(GET_GUIDELINES);
   const { execute: createGuideline, loading: creating } = useMutation(CREATE_GUIDELINE);
   const { execute: updateGuideline } = useMutation(UPDATE_GUIDELINE);
@@ -32,17 +34,27 @@ function GuidelinesContent() {
   useEffect(() => { fetchGuidelines(); }, [fetchGuidelines]);
 
   const handleCreate = useCallback(async () => {
-    await createGuideline({ input: { title, content } });
-    setTitle('');
-    setContent('');
-    setShowForm(false);
-    fetchGuidelines();
-  }, [title, content, createGuideline, fetchGuidelines]);
+    try {
+      await createGuideline({ input: { title, content } });
+      setTitle('');
+      setContent('');
+      setShowForm(false);
+      fetchGuidelines();
+      addToast('Criterio creado correctamente');
+    } catch {
+      addToast('Error al guardar criterio', 'error');
+    }
+  }, [title, content, createGuideline, fetchGuidelines, addToast]);
 
   const handleToggle = useCallback(async (g: Guideline) => {
-    await updateGuideline({ input: { id: g.id, isActive: !g.isActive } });
-    fetchGuidelines();
-  }, [updateGuideline, fetchGuidelines]);
+    try {
+      await updateGuideline({ input: { id: g.id, isActive: !g.isActive } });
+      fetchGuidelines();
+      addToast('Criterio actualizado correctamente');
+    } catch {
+      addToast('Error al guardar criterio', 'error');
+    }
+  }, [updateGuideline, fetchGuidelines, addToast]);
 
   if (loading && !guidelines) {
     return (

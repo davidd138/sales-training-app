@@ -14,7 +14,16 @@ import { Badge } from '@/components/ui/Badge';
 import { EmptyState } from '@/components/ui/EmptyState';
 import type { Scenario } from '@/types';
 
-const VOICES = ['alloy', 'ash', 'ballad', 'coral', 'echo', 'sage', 'shimmer', 'verse'];
+const VOICE_OPTIONS = [
+  { id: 'alloy', label: 'Alloy', description: 'Neutral y profesional' },
+  { id: 'ash', label: 'Ash', description: 'Grave y autoritaria' },
+  { id: 'ballad', label: 'Ballad', description: 'Suave y melodica' },
+  { id: 'coral', label: 'Coral', description: 'Calida y natural' },
+  { id: 'echo', label: 'Echo', description: 'Masculina y profunda' },
+  { id: 'sage', label: 'Sage', description: 'Madura y tranquila' },
+  { id: 'shimmer', label: 'Shimmer', description: 'Brillante y energica' },
+  { id: 'verse', label: 'Verse', description: 'Dinamica y expresiva' },
+] as const;
 const DIFFICULTIES = ['easy', 'medium', 'hard'] as const;
 
 const DIFFICULTY_CONFIG = {
@@ -203,17 +212,46 @@ function ScenariosContent() {
               value={form.industry}
               onChange={(e) => setForm({ ...form, industry: e.target.value })}
             />
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1.5">Voz del cliente IA</label>
-              <select
-                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-transparent transition-colors"
-                value={form.voice}
-                onChange={(e) => setForm({ ...form, voice: e.target.value })}
-              >
-                {VOICES.map(v => (
-                  <option key={v} value={v}>{v.charAt(0).toUpperCase() + v.slice(1)}</option>
-                ))}
-              </select>
+          </div>
+
+          {/* Voice Selector */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-slate-300 mb-3">Voz del cliente IA</label>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              {VOICE_OPTIONS.map(v => {
+                const isSelected = form.voice === v.id;
+                return (
+                  <button
+                    key={v.id}
+                    type="button"
+                    onClick={() => setForm({ ...form, voice: v.id })}
+                    className={`relative rounded-xl border-2 p-3 text-left transition-all ${
+                      isSelected
+                        ? 'border-amber-500/60 bg-amber-500/10 shadow-lg shadow-amber-500/5'
+                        : 'border-slate-700 bg-slate-800 hover:border-slate-600'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <svg className={`w-4 h-4 ${isSelected ? 'text-amber-400' : 'text-slate-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
+                      </svg>
+                      <span className={`text-sm font-semibold ${isSelected ? 'text-amber-300' : 'text-slate-300'}`}>
+                        {v.label}
+                      </span>
+                    </div>
+                    <p className={`text-xs ${isSelected ? 'text-amber-400/70' : 'text-slate-500'}`}>
+                      {v.description}
+                    </p>
+                    {isSelected && (
+                      <div className="absolute top-2 right-2">
+                        <svg className="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -337,7 +375,7 @@ function ScenariosContent() {
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
                   </svg>
-                  {s.voice || 'coral'}
+                  {(VOICE_OPTIONS.find(v => v.id === (s.voice || 'coral'))?.label) || s.voice || 'Coral'}
                 </span>
               </div>
 

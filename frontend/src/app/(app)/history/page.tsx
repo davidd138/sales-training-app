@@ -27,11 +27,22 @@ function scoreRingBg(score: number) {
   return 'from-red-500 to-red-400';
 }
 
+type StatusFilter = 'all' | 'completed' | 'in_progress';
+type SortOrder = 'newest' | 'oldest';
+
+const STATUS_OPTIONS: { value: StatusFilter; label: string }[] = [
+  { value: 'all', label: 'Todas' },
+  { value: 'completed', label: 'Completadas' },
+  { value: 'in_progress', label: 'En curso' },
+];
+
 export default function HistoryPage() {
   const router = useRouter();
   const { data, loading, execute } = useQuery<{ items: any[]; nextToken: string | null }>(LIST_CONVERSATIONS);
   const [allItems, setAllItems] = useState<any[]>([]);
   const [nextToken, setNextToken] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
 
   const loadMore = useCallback(async (token?: string | null) => {
     const result = await execute({ limit: 15, nextToken: token || undefined });
@@ -43,6 +54,14 @@ export default function HistoryPage() {
 
   useEffect(() => { loadMore().catch(() => {}); }, []);
 
+  const filteredItems = allItems
+    .filter((c: any) => statusFilter === 'all' || c.status === statusFilter)
+    .sort((a: any, b: any) => {
+      const dateA = new Date(a.startedAt).getTime();
+      const dateB = new Date(b.startedAt).getTime();
+      return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+    });
+
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-0 animate-fade-in">
       {/* Header */}
@@ -50,6 +69,44 @@ export default function HistoryPage() {
         <h1 className="text-2xl sm:text-3xl font-bold gradient-text">Historial de sesiones</h1>
         <p className="text-slate-400 text-sm mt-1">Revisa tus conversaciones anteriores y su analisis</p>
       </div>
+
+      {/* Filters */}
+      {allItems.length > 0 && (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-5 animate-slide-up" style={{ animationDelay: '50ms' }}>
+          {/* Status filter */}
+          <div className="flex items-center gap-1.5 bg-slate-800/60 rounded-xl p-1 border border-slate-700/50">
+            {STATUS_OPTIONS.map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => setStatusFilter(opt.value)}
+                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
+                  statusFilter === opt.value
+                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
+                    : 'text-slate-400 hover:text-slate-200 border border-transparent'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Sort order */}
+          <button
+            onClick={() => setSortOrder(prev => prev === 'newest' ? 'oldest' : 'newest')}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-400 hover:text-slate-200 bg-slate-800/60 border border-slate-700/50 rounded-xl transition-all hover:border-slate-600"
+          >
+            <svg className={`w-3.5 h-3.5 transition-transform ${sortOrder === 'oldest' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 4.5h14.25M3 9h9.75M3 13.5h5.25m5.25-.75L17.25 9m0 0L21 12.75M17.25 9v12" />
+            </svg>
+            {sortOrder === 'newest' ? 'Mas recientes' : 'Mas antiguas'}
+          </button>
+
+          {/* Results count */}
+          <span className="text-xs text-slate-500 sm:ml-auto">
+            {filteredItems.length} de {allItems.length} sesiones
+          </span>
+        </div>
+      )}
 
       {loading && allItems.length === 0 ? (
         <div className="flex justify-center py-12"><Spinner /></div>
@@ -63,10 +120,15 @@ export default function HistoryPage() {
         </div>
       ) : (
         <>
+          {filteredItems.length === 0 ? (
+            <div className="glass rounded-2xl p-8 text-center">
+              <p className="text-slate-400 text-sm">No hay sesiones que coincidan con los filtros seleccionados.</p>
+            </div>
+          ) : (<>
           {/* Mobile: Card layout / Desktop: Table */}
           {/* Mobile cards */}
           <div className="grid grid-cols-1 gap-3 sm:hidden">
-            {allItems.map((c: any, idx: number) => (
+            {filteredItems.map((c: any, idx: number) => (
               <div
                 key={c.id}
                 className="glass rounded-xl p-4 cursor-pointer hover:border-cyan-500/30 transition-all duration-200 animate-slide-up"
@@ -119,7 +181,7 @@ export default function HistoryPage() {
                 </tr>
               </thead>
               <tbody>
-                {allItems.map((c: any) => (
+                {filteredItems.map((c: any) => (
                   <tr
                     key={c.id}
                     className="border-b border-slate-700/20 hover:bg-slate-700/20 cursor-pointer transition-colors group"
@@ -160,6 +222,7 @@ export default function HistoryPage() {
               </tbody>
             </table>
           </div>
+          </>)}
 
           {nextToken && (
             <div className="flex justify-center mt-6">

@@ -269,6 +269,19 @@ Si el comercial no aporta valor, corta la conversacion: "Mira, no me interesa, t
         }));
         setState('connected');
         startMicStream(ws, stream, micAudioCtx);
+
+        // Trigger the AI to answer the phone first (like a real person would)
+        setTimeout(() => {
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({
+              type: 'response.create',
+              response: {
+                modalities: ['audio', 'text'],
+                instructions: 'El telefono esta sonando. Contesta como lo harias normalmente. Di algo breve como "Digame?" o "Si, buenos dias?" o lo que encaje con tu personalidad. Solo una frase corta de saludo al contestar el telefono.',
+              },
+            }));
+          }
+        }, 500);
       };
 
       ws.onmessage = (event) => handleMessage(JSON.parse(event.data));

@@ -257,7 +257,7 @@ export default function AnalyticsPage() {
                       {isMe && <span className="text-xs text-cyan-500 ml-2">(Tu)</span>}
                     </p>
                   </div>
-                  <div className="flex items-center gap-4 shrink-0">
+                  <div className="flex items-center gap-2 sm:gap-4 shrink-0">
                     <div className="hidden sm:flex items-center gap-2">
                       <div className="w-16 h-2 bg-slate-700 rounded-full overflow-hidden">
                         <div
@@ -271,6 +271,9 @@ export default function AnalyticsPage() {
                     </span>
                     <span className="text-xs text-slate-500 min-w-[3rem] text-right hidden sm:block">
                       {entry.totalSessions} ses.
+                    </span>
+                    <span className="text-[10px] text-slate-600 sm:hidden">
+                      {entry.totalSessions}s
                     </span>
                   </div>
                 </div>
@@ -300,13 +303,13 @@ export default function AnalyticsPage() {
             <p className="text-slate-400 text-sm mb-4">
               Tu punto mas debil es <span className="text-amber-400 font-semibold">{weakest.icon} {weakest.key}</span> con una puntuacion de <span className="text-amber-400 font-semibold">{Math.round(weakest.value)}</span>. Aqui tienes consejos para mejorar:
             </p>
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               {tips.map((tip, i) => (
-                <div key={i} className="flex items-start gap-3 bg-slate-800/40 rounded-xl p-3 border border-slate-700/30">
+                <div key={i} className="flex items-start gap-2.5 sm:gap-3 bg-slate-800/40 rounded-xl p-3 sm:p-4 border border-slate-700/30">
                   <div className="w-6 h-6 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0 mt-0.5">
                     <span className="text-amber-400 text-xs font-bold">{i + 1}</span>
                   </div>
-                  <p className="text-slate-300 text-sm">{tip}</p>
+                  <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">{tip}</p>
                 </div>
               ))}
             </div>

@@ -244,9 +244,9 @@ export default function AnalysisPage() {
             {matchedScenario && difficultyBadge(matchedScenario.difficulty)}
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
           <Button variant="secondary" onClick={handleReanalyze} disabled={analyzing}>
-            <span className="flex items-center gap-2">
+            <span className="flex items-center justify-center gap-2">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182" />
               </svg>
@@ -254,7 +254,7 @@ export default function AnalysisPage() {
             </span>
           </Button>
           <Button variant="secondary" onClick={() => router.push('/history')}>
-            <span className="flex items-center gap-2">
+            <span className="flex items-center justify-center gap-2">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
               </svg>
@@ -267,7 +267,7 @@ export default function AnalysisPage() {
       {/* Score Ring */}
       <div className="glass rounded-2xl p-6 sm:p-10 flex flex-col items-center animate-slide-up">
         <p className="text-slate-400 text-sm font-medium mb-4 uppercase tracking-wider">Puntuacion general</p>
-        <div className="relative w-40 h-40 sm:w-48 sm:h-48">
+        <div className="relative w-32 h-32 sm:w-48 sm:h-48">
           <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
             <defs>
               <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -285,7 +285,7 @@ export default function AnalysisPage() {
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className={`text-5xl sm:text-6xl font-bold ${scoreColor(s.overallScore)}`}>
+            <span className={`text-4xl sm:text-6xl font-bold ${scoreColor(s.overallScore)}`}>
               {Math.round(s.overallScore)}
             </span>
             <span className="text-slate-500 text-xs font-medium mt-1">de 100</span>
@@ -429,7 +429,7 @@ export default function AnalysisPage() {
                 const transcript = JSON.parse(data.conversation.transcript);
                 return transcript.map((entry: any, i: number) => (
                   <div key={i} className={`flex ${entry.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[85%] sm:max-w-[75%] rounded-2xl px-4 py-3 text-sm ${
+                    <div className={`max-w-[80%] sm:max-w-[75%] rounded-2xl px-3 sm:px-4 py-2.5 sm:py-3 text-sm ${
                       entry.role === 'user'
                         ? 'bg-gradient-to-br from-blue-500/20 to-cyan-500/10 text-slate-200 border border-blue-500/20 rounded-br-sm'
                         : 'bg-slate-700/60 text-slate-300 border border-slate-600/30 rounded-bl-sm'

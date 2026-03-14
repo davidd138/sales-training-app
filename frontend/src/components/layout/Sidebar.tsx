@@ -127,9 +127,10 @@ export function Sidebar() {
           <aside aria-label="Menu de navegacion" className="absolute left-0 top-0 h-full w-72 bg-slate-800 border-r border-slate-700/50 flex flex-col animate-slide-in shadow-2xl">
             <button
               onClick={() => setMobileOpen(false)}
-              className="absolute top-4 right-4 w-8 h-8 rounded-lg bg-slate-700 flex items-center justify-center"
+              className="absolute top-4 right-4 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 transition-colors"
               aria-label="Cerrar menu"
             >
+              <span className="text-xs text-slate-400 font-medium">Cerrar</span>
               <svg className="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>

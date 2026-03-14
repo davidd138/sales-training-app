@@ -171,6 +171,30 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {/* Quick start guide for new users */}
+      {a && a.totalSessions === 0 && !isAdmin && (
+        <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 rounded-2xl border border-blue-500/20 p-6 animate-slide-up">
+          <h2 className="text-lg font-semibold text-white mb-3">Como funciona SalesPulse AI</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {[
+              { step: '1', title: 'Elige un escenario', desc: 'Selecciona un cliente virtual con diferente nivel de dificultad', icon: 'M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z' },
+              { step: '2', title: 'Practica la llamada', desc: 'Habla con el cliente IA que reacciona como una persona real', icon: 'M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z' },
+              { step: '3', title: 'Recibe feedback', desc: 'Un coach IA analiza tu conversacion con metodologia SPIN y Challenger', icon: 'M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z' },
+            ].map(({ step, title, desc, icon }) => (
+              <div key={step} className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shrink-0 text-white text-sm font-bold">
+                  {step}
+                </div>
+                <div>
+                  <p className="text-white text-sm font-medium">{title}</p>
+                  <p className="text-slate-400 text-xs mt-0.5">{desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Recent sessions */}
       <div>
         <div className="flex items-center justify-between mb-4">

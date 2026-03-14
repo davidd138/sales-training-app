@@ -23,11 +23,12 @@ function scoreBg(score: number) {
 }
 
 const CATEGORIES = [
-  { key: 'rapport', label: 'Rapport' },
-  { key: 'discovery', label: 'Discovery' },
-  { key: 'presentation', label: 'Presentación' },
-  { key: 'objectionHandling', label: 'Objeciones' },
-  { key: 'closing', label: 'Cierre' },
+  { key: 'rapport', label: 'Apertura y Rapport', weight: '15%' },
+  { key: 'discovery', label: 'Descubrimiento (SPIN)', weight: '25%' },
+  { key: 'presentation', label: 'Propuesta de Valor', weight: '20%' },
+  { key: 'objectionHandling', label: 'Manejo de Objeciones', weight: '20%' },
+  { key: 'closing', label: 'Cierre y Proximos Pasos', weight: '10%' },
+  { key: 'communication', label: 'Comunicacion', weight: '10%' },
 ] as const;
 
 export default function AnalysisPage() {
@@ -97,6 +98,12 @@ export default function AnalysisPage() {
 
   if (!displayScore) return null;
   const s = displayScore;
+  let categoryDetails: Record<string, any> = {};
+  try {
+    if (s.categoryDetails) {
+      categoryDetails = typeof s.categoryDetails === 'string' ? JSON.parse(s.categoryDetails) : s.categoryDetails;
+    }
+  } catch { /* ignore */ }
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -126,19 +133,26 @@ export default function AnalysisPage() {
       </Card>
 
       <Card>
-        <h2 className="text-lg font-semibold text-white mb-4">Desglose por categoría</h2>
+        <h2 className="text-lg font-semibold text-white mb-4">Desglose por categoria</h2>
         <div className="space-y-4">
-          {CATEGORIES.map(({ key, label }) => {
-            const val = s[key] as number;
+          {CATEGORIES.map(({ key, label, weight }) => {
+            const val = (s[key as keyof Score] as number) || 0;
+            const details = categoryDetails?.[key];
             return (
               <div key={key}>
                 <div className="flex justify-between text-sm mb-1">
-                  <span className="text-slate-300">{label}</span>
+                  <span className="text-slate-300">{label} <span className="text-slate-500 text-xs">({weight})</span></span>
                   <span className={scoreColor(val)}>{Math.round(val)}</span>
                 </div>
                 <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
                   <div className={`h-full rounded-full transition-all duration-500 ${scoreBg(val)}`} style={{ width: `${val}%` }} />
                 </div>
+                {details?.comment && (
+                  <p className="text-xs text-slate-400 mt-1">{details.comment}</p>
+                )}
+                {details?.evidence && (
+                  <p className="text-xs text-slate-500 mt-0.5 italic">&quot;{details.evidence}&quot;</p>
+                )}
               </div>
             );
           })}

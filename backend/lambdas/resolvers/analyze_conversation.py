@@ -2,6 +2,7 @@ import os
 import json
 import boto3
 from datetime import datetime, timezone
+from validation import validate_uuid, ValidationError
 
 conversations_table = boto3.resource("dynamodb").Table(os.environ["CONVERSATIONS_TABLE"])
 scores_table = boto3.resource("dynamodb").Table(os.environ["SCORES_TABLE"])
@@ -15,7 +16,10 @@ MODEL_ID = "eu.anthropic.claude-sonnet-4-20250514-v1:0"
 def handler(event, context):
     identity = event.get("identity", {})
     user_id = identity.get("sub", "")
-    conv_id = event.get("arguments", {}).get("conversationId", "")
+    try:
+        conv_id = validate_uuid(event.get("arguments", {}).get("conversationId", ""), "conversationId")
+    except ValidationError as e:
+        raise Exception(str(e))
 
     conv = conversations_table.get_item(Key={"id": conv_id}).get("Item")
     if not conv or conv["userId"] != user_id:

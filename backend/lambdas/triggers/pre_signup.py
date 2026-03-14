@@ -1,4 +1,5 @@
 def handler(event, context):
-    event["response"]["autoConfirmUser"] = True
-    event["response"]["autoVerifyEmail"] = True
+    # Do NOT auto-confirm; user must verify email with code
+    event["response"]["autoConfirmUser"] = False
+    event["response"]["autoVerifyEmail"] = False
     return event

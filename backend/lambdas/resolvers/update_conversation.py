@@ -1,5 +1,9 @@
 import os
 import boto3
+from validation import (
+    validate_uuid, validate_enum, validate_positive_int,
+    validate_transcript, ValidationError,
+)
 
 conversations_table = boto3.resource("dynamodb").Table(os.environ["CONVERSATIONS_TABLE"])
 
@@ -9,9 +13,25 @@ def handler(event, context):
     user_id = identity.get("sub", "")
     args = event.get("arguments", {}).get("input", {})
 
-    conv = conversations_table.get_item(Key={"id": args["id"]}).get("Item")
+    try:
+        conv_id = validate_uuid(args.get("id"), "id")
+    except ValidationError as e:
+        raise Exception(str(e))
+
+    conv = conversations_table.get_item(Key={"id": conv_id}).get("Item")
     if not conv or conv["userId"] != user_id:
         raise Exception("Not found or unauthorized")
+
+    # Validate optional fields
+    try:
+        if "status" in args and args["status"] is not None:
+            validate_enum(args["status"], "status", ["in_progress", "completed"])
+        if "duration" in args and args["duration"] is not None:
+            validate_positive_int(args["duration"], "duration")
+        if "transcript" in args and args["transcript"] is not None:
+            validate_transcript(args["transcript"])
+    except ValidationError as e:
+        raise Exception(str(e))
 
     update_expr_parts = []
     expr_values = {}
@@ -28,7 +48,7 @@ def handler(event, context):
         return conv
 
     conversations_table.update_item(
-        Key={"id": args["id"]},
+        Key={"id": conv_id},
         UpdateExpression="SET " + ", ".join(update_expr_parts),
         ExpressionAttributeValues=expr_values,
         ExpressionAttributeNames=expr_names,

@@ -8,6 +8,7 @@ from aws_cdk import (
     aws_lambda as _lambda,
     aws_iam as iam,
     aws_secretsmanager as secretsmanager,
+    aws_wafv2 as wafv2,
 )
 
 
@@ -15,7 +16,7 @@ class BackendStack(cdk.Stack):
     def __init__(self, scope: Construct, construct_id: str, env_name: str, **kwargs):
         super().__init__(scope, construct_id, **kwargs)
 
-        # ---- Pre-signup Lambda (for auto-confirm) ----
+        # ---- Pre-signup Lambda (email verification, no auto-confirm) ----
         pre_signup_fn = _lambda.Function(
             self, "PreSignupFn",
             runtime=_lambda.Runtime.PYTHON_3_11,
@@ -26,7 +27,7 @@ class BackendStack(cdk.Stack):
             function_name=f"{env_name}-st-pre-signup",
         )
 
-        # ---- Cognito ----
+        # ---- Cognito (hardened) ----
         user_pool = cognito.UserPool(
             self, "UserPool",
             user_pool_name=f"{env_name}-st-users",
@@ -34,14 +35,16 @@ class BackendStack(cdk.Stack):
             sign_in_aliases=cognito.SignInAliases(email=True),
             auto_verify=cognito.AutoVerifiedAttrs(email=True),
             password_policy=cognito.PasswordPolicy(
-                min_length=8,
+                min_length=12,
                 require_lowercase=True,
                 require_uppercase=True,
                 require_digits=True,
+                require_symbols=True,
             ),
             standard_attributes=cognito.StandardAttributes(
                 email=cognito.StandardAttribute(required=True, mutable=True),
             ),
+            account_recovery=cognito.AccountRecovery.EMAIL_ONLY,
             lambda_triggers=cognito.UserPoolTriggers(
                 pre_sign_up=pre_signup_fn,
             ),
@@ -118,7 +121,7 @@ class BackendStack(cdk.Stack):
             description="OpenAI API Key for Realtime voice sessions",
         )
 
-        # ---- AppSync ----
+        # ---- AppSync (Cognito-only auth, no API key) ----
         api = appsync.GraphqlApi(
             self, "Api",
             name=f"{env_name}-st-api",
@@ -130,15 +133,62 @@ class BackendStack(cdk.Stack):
                     authorization_type=appsync.AuthorizationType.USER_POOL,
                     user_pool_config=appsync.UserPoolConfig(user_pool=user_pool),
                 ),
-                additional_authorization_modes=[
-                    appsync.AuthorizationMode(
-                        authorization_type=appsync.AuthorizationType.API_KEY,
-                        api_key_config=appsync.ApiKeyConfig(
-                            expires=cdk.Expiration.after(cdk.Duration.days(365)),
+            ),
+        )
+
+        # ---- WAF for AppSync ----
+        waf_acl = wafv2.CfnWebACL(
+            self, "ApiWaf",
+            scope="REGIONAL",
+            default_action=wafv2.CfnWebACL.DefaultActionProperty(allow={}),
+            visibility_config=wafv2.CfnWebACL.VisibilityConfigProperty(
+                sampled_requests_enabled=True,
+                cloud_watch_metrics_enabled=True,
+                metric_name=f"{env_name}-st-api-waf",
+            ),
+            rules=[
+                # Rate limiting: 1000 requests per 5 minutes per IP
+                wafv2.CfnWebACL.RuleProperty(
+                    name="RateLimit",
+                    priority=1,
+                    action=wafv2.CfnWebACL.RuleActionProperty(block={}),
+                    statement=wafv2.CfnWebACL.StatementProperty(
+                        rate_based_statement=wafv2.CfnWebACL.RateBasedStatementProperty(
+                            limit=1000,
+                            aggregate_key_type="IP",
                         ),
                     ),
-                ],
-            ),
+                    visibility_config=wafv2.CfnWebACL.VisibilityConfigProperty(
+                        sampled_requests_enabled=True,
+                        cloud_watch_metrics_enabled=True,
+                        metric_name=f"{env_name}-rate-limit",
+                    ),
+                ),
+                # AWS Common Rule Set
+                wafv2.CfnWebACL.RuleProperty(
+                    name="AWSCommonRules",
+                    priority=2,
+                    override_action=wafv2.CfnWebACL.OverrideActionProperty(none={}),
+                    statement=wafv2.CfnWebACL.StatementProperty(
+                        managed_rule_group_statement=wafv2.CfnWebACL.ManagedRuleGroupStatementProperty(
+                            vendor_name="AWS",
+                            name="AWSManagedRulesCommonRuleSet",
+                        ),
+                    ),
+                    visibility_config=wafv2.CfnWebACL.VisibilityConfigProperty(
+                        sampled_requests_enabled=True,
+                        cloud_watch_metrics_enabled=True,
+                        metric_name=f"{env_name}-common-rules",
+                    ),
+                ),
+            ],
+        )
+
+        # Associate WAF with AppSync
+        wafv2.CfnWebACLAssociation(
+            self, "ApiWafAssociation",
+            resource_arn=api.arn,
+            web_acl_arn=waf_acl.attr_arn,
         )
 
         # ---- Common Lambda environment ----
@@ -151,8 +201,21 @@ class BackendStack(cdk.Stack):
             "ENV_NAME": env_name,
         }
 
-        # ---- Helper to create Lambda + AppSync resolver ----
-        def create_resolver(name: str, type_name: str, field_name: str, extra_env=None, timeout=30, memory=256):
+        tables = {
+            "users": users_table,
+            "scenarios": scenarios_table,
+            "conversations": conversations_table,
+            "scores": scores_table,
+            "guidelines": guidelines_table,
+        }
+
+        # ---- Helper to create Lambda + AppSync resolver with least-privilege ----
+        def create_resolver(
+            name: str, type_name: str, field_name: str,
+            read_tables: list[str] | None = None,
+            write_tables: list[str] | None = None,
+            extra_env=None, timeout=30, memory=256,
+        ):
             env = {**common_env, **(extra_env or {})}
             fn = _lambda.Function(
                 self, f"{name}Fn",
@@ -167,9 +230,11 @@ class BackendStack(cdk.Stack):
                 memory_size=memory,
             )
 
-            # Grant table access
-            for table in [users_table, scenarios_table, conversations_table, scores_table, guidelines_table]:
-                table.grant_read_write_data(fn)
+            # Grant least-privilege table access
+            for t_name in (read_tables or []):
+                tables[t_name].grant_read_data(fn)
+            for t_name in (write_tables or []):
+                tables[t_name].grant_read_write_data(fn)
 
             ds = api.add_lambda_data_source(f"{name}DS", fn)
             ds.create_resolver(
@@ -179,9 +244,10 @@ class BackendStack(cdk.Stack):
             )
             return fn
 
-        # ---- Resolvers ----
+        # ---- Resolvers with least-privilege permissions ----
         sync_user_fn = create_resolver(
             "sync_user", "Mutation", "syncUser",
+            write_tables=["users"],
             extra_env={"USER_POOL_ID": user_pool.user_pool_id},
         )
         sync_user_fn.add_to_role_policy(
@@ -190,19 +256,32 @@ class BackendStack(cdk.Stack):
                 resources=[user_pool.user_pool_arn],
             )
         )
-        create_resolver("list_scenarios", "Query", "listScenarios")
-        create_resolver("create_scenario", "Mutation", "createScenario")
-        create_resolver("create_conversation", "Mutation", "createConversation")
-        create_resolver("update_conversation", "Mutation", "updateConversation")
-        create_resolver("get_conversation", "Query", "getConversation")
-        create_resolver("list_conversations", "Query", "listConversations")
-        create_resolver("get_guidelines", "Query", "getGuidelines")
-        create_resolver("create_guideline", "Mutation", "createGuideline")
-        create_resolver("update_guideline", "Mutation", "updateGuideline")
-        create_resolver("get_analytics", "Query", "getAnalytics")
-        create_resolver("get_leaderboard", "Query", "getLeaderboard")
 
-        # Realtime token Lambda (needs Secrets Manager access)
+        create_resolver("list_scenarios", "Query", "listScenarios", read_tables=["scenarios"])
+        create_resolver("create_scenario", "Mutation", "createScenario", write_tables=["scenarios"])
+        create_resolver(
+            "create_conversation", "Mutation", "createConversation",
+            read_tables=["scenarios"], write_tables=["conversations"],
+        )
+        create_resolver("update_conversation", "Mutation", "updateConversation", write_tables=["conversations"])
+        create_resolver(
+            "get_conversation", "Query", "getConversation",
+            read_tables=["conversations", "scores"],
+        )
+        create_resolver("list_conversations", "Query", "listConversations", read_tables=["conversations"])
+        create_resolver("get_guidelines", "Query", "getGuidelines", read_tables=["guidelines"])
+        create_resolver("create_guideline", "Mutation", "createGuideline", write_tables=["guidelines"])
+        create_resolver("update_guideline", "Mutation", "updateGuideline", write_tables=["guidelines"])
+        create_resolver(
+            "get_analytics", "Query", "getAnalytics",
+            read_tables=["scores", "conversations"],
+        )
+        create_resolver(
+            "get_leaderboard", "Query", "getLeaderboard",
+            read_tables=["scores", "users"],
+        )
+
+        # Realtime token Lambda (Secrets Manager only, no table access)
         token_fn = create_resolver(
             "get_realtime_token", "Query", "getRealtimeToken",
             extra_env={"OPENAI_SECRET_NAME": openai_secret.secret_name},
@@ -210,22 +289,30 @@ class BackendStack(cdk.Stack):
         )
         openai_secret.grant_read(token_fn)
 
-        # Analyze conversation Lambda (needs Bedrock access)
+        # Analyze conversation Lambda (Bedrock + multiple tables)
         analyze_fn = create_resolver(
             "analyze_conversation", "Mutation", "analyzeConversation",
+            read_tables=["conversations", "scenarios", "guidelines"],
+            write_tables=["scores"],
             timeout=60,
             memory=512,
         )
         analyze_fn.add_to_role_policy(
             iam.PolicyStatement(
                 actions=["bedrock:InvokeModel"],
-                resources=["*"],
+                resources=[
+                    f"arn:aws:bedrock:{self.region}::foundation-model/anthropic.claude-sonnet-4-20250514-v1:0",
+                    f"arn:aws:bedrock:*:{self.account}:inference-profile/eu.anthropic.claude-sonnet-4-20250514-v1:0",
+                ],
             )
         )
 
-        # ---- Outputs ----
+        # ---- Exports ----
+        self.graphql_url = api.graphql_url
+        self.user_pool_id = user_pool.user_pool_id
+        self.user_pool_client_id = user_pool_client.user_pool_client_id
+
         cdk.CfnOutput(self, "GraphQLUrl", value=api.graphql_url, export_name=f"{env_name}-st-graphql-url")
-        cdk.CfnOutput(self, "GraphQLApiKey", value=api.api_key or "", export_name=f"{env_name}-st-graphql-api-key")
         cdk.CfnOutput(self, "UserPoolId", value=user_pool.user_pool_id, export_name=f"{env_name}-st-user-pool-id")
         cdk.CfnOutput(self, "UserPoolClientId", value=user_pool_client.user_pool_client_id, export_name=f"{env_name}-st-user-pool-client-id")
         cdk.CfnOutput(self, "Region", value=self.region, export_name=f"{env_name}-st-region")

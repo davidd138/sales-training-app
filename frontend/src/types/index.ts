@@ -66,6 +66,15 @@ export type Analytics = {
   avgPresentation: number;
   avgObjectionHandling: number;
   avgClosing: number;
+  avgCommunication?: number;
+  avgCategories?: {
+    rapport: number;
+    discovery: number;
+    presentation: number;
+    objectionHandling: number;
+    closing: number;
+    communication: number;
+  };
   teamAvgOverallScore: number;
   teamAvgRapport: number;
   teamAvgDiscovery: number;

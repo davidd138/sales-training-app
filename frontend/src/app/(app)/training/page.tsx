@@ -8,6 +8,8 @@ import { LIST_SCENARIOS } from '@/lib/graphql/queries';
 import { CREATE_CONVERSATION, UPDATE_CONVERSATION, ANALYZE_CONVERSATION } from '@/lib/graphql/mutations';
 import { Spinner } from '@/components/ui/Spinner';
 import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
+import { Logo } from '@/components/ui/Logo';
 import type { Scenario, TranscriptEntry } from '@/types';
 
 const stateLabels: Record<string, string> = {
@@ -28,10 +30,11 @@ const stateColors: Record<string, string> = {
   error: 'bg-red-500',
 };
 
-const difficultyLabels: Record<string, { label: string; color: string; tips: string[] }> = {
+const difficultyLabels: Record<string, { label: string; color: string; gradient: string; tips: string[] }> = {
   easy: {
-    label: 'Facil',
-    color: 'text-green-400 bg-green-500/20',
+    label: 'Principiante',
+    color: 'text-emerald-400',
+    gradient: 'from-emerald-500/20 to-emerald-600/5 border-emerald-500/20',
     tips: [
       'El cliente es receptivo — aprovecha para practicar descubrimiento de necesidades',
       'Haz preguntas abiertas para que el cliente hable de su situacion',
@@ -39,8 +42,9 @@ const difficultyLabels: Record<string, { label: string; color: string; tips: str
     ],
   },
   medium: {
-    label: 'Medio',
-    color: 'text-amber-400 bg-amber-500/20',
+    label: 'Intermedio',
+    color: 'text-amber-400',
+    gradient: 'from-amber-500/20 to-amber-600/5 border-amber-500/20',
     tips: [
       'El cliente tiene objeciones reales — preparate para manejarlas con datos',
       'No asumas necesidades: pregunta antes de presentar soluciones',
@@ -48,8 +52,9 @@ const difficultyLabels: Record<string, { label: string; color: string; tips: str
     ],
   },
   hard: {
-    label: 'Dificil',
-    color: 'text-red-400 bg-red-500/20',
+    label: 'Experto',
+    color: 'text-red-400',
+    gradient: 'from-red-500/20 to-red-600/5 border-red-500/20',
     tips: [
       'Tienes 30 segundos para captar su atencion — se directo y aporta valor inmediato',
       'El cliente puede ser hostil o cortante — no te lo tomes como algo personal',
@@ -87,7 +92,6 @@ export default function TrainingPage() {
     });
   }, [scenarioId]);
 
-  // Auto-scroll transcript
   useEffect(() => {
     transcriptEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [training.transcript]);
@@ -140,54 +144,79 @@ export default function TrainingPage() {
   if (phase === 'briefing') {
     return (
       <div className="fixed inset-0 bg-slate-900 z-50 overflow-y-auto">
-        <div className="max-w-2xl mx-auto py-12 px-6">
-          <button onClick={() => router.push('/scenarios')} className="text-slate-400 hover:text-white text-sm mb-8 flex items-center gap-1">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-            Volver a escenarios
-          </button>
-
-          <div className="flex items-center gap-3 mb-6">
-            <span className={`px-2.5 py-1 text-xs font-bold rounded-full ${diffInfo.color}`}>{diffInfo.label}</span>
-            <span className="text-xs text-slate-500">{scenario.industry}</span>
+        <div className="max-w-2xl mx-auto py-8 sm:py-12 px-4 sm:px-6 animate-fade-in">
+          <div className="flex items-center justify-between mb-8">
+            <button onClick={() => router.push('/scenarios')} className="text-slate-400 hover:text-white text-sm flex items-center gap-1 transition-colors">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+              Volver
+            </button>
+            <Logo size="sm" />
           </div>
 
-          <h1 className="text-3xl font-bold text-white mb-2">{scenario.name}</h1>
-          <p className="text-slate-400 mb-8">{scenario.description}</p>
+          {/* Scenario header */}
+          <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r ${diffInfo.gradient} border mb-4`}>
+            <div className={`w-2 h-2 rounded-full ${stateColors[scenario.difficulty === 'easy' ? 'connected' : scenario.difficulty === 'hard' ? 'error' : 'connecting']}`} />
+            <span className={`text-xs font-bold ${diffInfo.color}`}>{diffInfo.label}</span>
+            <span className="text-xs text-slate-500">•</span>
+            <span className="text-xs text-slate-400">{scenario.industry}</span>
+          </div>
 
-          <div className="bg-slate-800 rounded-xl border border-slate-700 p-6 mb-6">
-            <h2 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4">Perfil del Cliente</h2>
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div>
-                <p className="text-xs text-slate-500">Nombre</p>
-                <p className="text-white font-medium">{scenario.clientName}</p>
-              </div>
-              <div>
-                <p className="text-xs text-slate-500">Cargo</p>
-                <p className="text-white font-medium">{scenario.clientTitle}</p>
-              </div>
-              <div>
-                <p className="text-xs text-slate-500">Empresa</p>
-                <p className="text-white font-medium">{scenario.clientCompany}</p>
-              </div>
-              <div>
-                <p className="text-xs text-slate-500">Sector</p>
-                <p className="text-white font-medium">{scenario.industry}</p>
-              </div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">{scenario.name}</h1>
+          <p className="text-slate-400 mb-6 sm:mb-8">{scenario.description}</p>
+
+          {/* Client profile card */}
+          <div className="bg-slate-800 rounded-xl border border-slate-700/50 overflow-hidden mb-6">
+            <div className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 px-6 py-4 border-b border-slate-700/50">
+              <h2 className="text-sm font-semibold text-blue-400 uppercase tracking-wider flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                </svg>
+                Perfil del cliente
+              </h2>
             </div>
-            {persona.personality && (
-              <div className="mt-4 pt-4 border-t border-slate-700">
-                <p className="text-xs text-slate-500 mb-1">Personalidad</p>
-                <p className="text-sm text-slate-300">{persona.personality}</p>
+            <div className="p-6">
+              <div className="flex items-center gap-4 mb-4">
+                <div className={`w-14 h-14 rounded-xl ${diffInfo.color === 'text-emerald-400' ? 'bg-emerald-500/20' : diffInfo.color === 'text-amber-400' ? 'bg-amber-500/20' : 'bg-red-500/20'} flex items-center justify-center text-2xl font-bold ${diffInfo.color}`}>
+                  {scenario.clientName[0]}
+                </div>
+                <div>
+                  <p className="text-white font-semibold text-lg">{scenario.clientName}</p>
+                  <p className="text-slate-400 text-sm">{scenario.clientTitle} — {scenario.clientCompany}</p>
+                </div>
               </div>
-            )}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-slate-700/30 rounded-lg p-3">
+                  <p className="text-[10px] text-slate-500 uppercase tracking-wider">Sector</p>
+                  <p className="text-slate-200 text-sm font-medium mt-0.5">{scenario.industry}</p>
+                </div>
+                <div className="bg-slate-700/30 rounded-lg p-3">
+                  <p className="text-[10px] text-slate-500 uppercase tracking-wider">Dificultad</p>
+                  <p className={`text-sm font-medium mt-0.5 ${diffInfo.color}`}>{diffInfo.label}</p>
+                </div>
+              </div>
+              {persona.personality && (
+                <div className="mt-4 pt-4 border-t border-slate-700/50">
+                  <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Personalidad</p>
+                  <p className="text-sm text-slate-300 italic">"{persona.personality}"</p>
+                </div>
+              )}
+            </div>
           </div>
 
-          <div className="bg-slate-800 rounded-xl border border-amber-500/30 p-6 mb-8">
-            <h2 className="text-sm font-semibold text-amber-400 uppercase tracking-wider mb-3">Consejos para esta dificultad</h2>
+          {/* Tips */}
+          <div className={`bg-gradient-to-r ${diffInfo.gradient} rounded-xl border p-5 sm:p-6 mb-8`}>
+            <h2 className={`text-sm font-semibold ${diffInfo.color} uppercase tracking-wider mb-3 flex items-center gap-2`}>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
+              </svg>
+              Consejos
+            </h2>
             <ul className="space-y-2">
               {diffInfo.tips.map((tip, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-slate-300">
-                  <span className="text-amber-400 mt-0.5">&#8226;</span>
+                  <span className={`mt-1 ${diffInfo.color}`}>
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" /></svg>
+                  </span>
                   {tip}
                 </li>
               ))}
@@ -195,8 +224,16 @@ export default function TrainingPage() {
           </div>
 
           <div className="flex justify-center">
-            <Button onClick={startCall} className="px-8 py-3 text-base">
-              Iniciar Llamada
+            <Button
+              onClick={startCall}
+              className="px-8 sm:px-12 py-3 sm:py-4 text-base sm:text-lg bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 border-0 shadow-lg shadow-blue-500/25 transition-all hover:shadow-xl hover:shadow-blue-500/30"
+            >
+              <span className="flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
+                </svg>
+                Iniciar Llamada
+              </span>
             </Button>
           </div>
         </div>
@@ -207,61 +244,115 @@ export default function TrainingPage() {
   // ===== SAVING SCREEN =====
   if (phase === 'saving') {
     return (
-      <div className="fixed inset-0 bg-slate-900 z-50 flex flex-col items-center justify-center">
-        <Spinner className="h-10 w-10 mb-4" />
-        <p className="text-white text-lg">Analizando tu conversacion...</p>
-        <p className="text-slate-400 text-sm mt-2">Esto puede tardar unos segundos</p>
+      <div className="fixed inset-0 bg-slate-900 z-50 flex flex-col items-center justify-center px-4">
+        <div className="relative mb-8">
+          <div className="w-20 h-20 rounded-full bg-gradient-to-r from-blue-500/20 to-cyan-500/20 animate-ping absolute inset-0" />
+          <div className="w-20 h-20 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 flex items-center justify-center relative">
+            <svg className="w-8 h-8 text-white animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" />
+            </svg>
+          </div>
+        </div>
+        <p className="text-white text-xl font-semibold mb-2">Analizando tu conversacion</p>
+        <p className="text-slate-400 text-sm text-center">Nuestro coach de IA esta evaluando tu rendimiento...</p>
+        <div className="mt-6 flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+          <div className="w-2 h-2 rounded-full bg-cyan-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+          <div className="w-2 h-2 rounded-full bg-emerald-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+        </div>
       </div>
     );
   }
 
   // ===== CALL SCREEN =====
   return (
-    <div className="fixed inset-0 bg-slate-900 z-50 flex">
-      {/* Left side — call interface */}
-      <div className="flex-1 flex flex-col items-center justify-center">
-        <div className="text-center mb-8">
-          <p className="text-slate-400 text-sm uppercase tracking-wider mb-1">En llamada con</p>
-          <h2 className="text-2xl font-bold text-white">{scenario.clientName}</h2>
-          <p className="text-slate-400 text-sm">{scenario.clientTitle} — {scenario.clientCompany}</p>
+    <div className="fixed inset-0 bg-slate-900 z-50 flex flex-col md:flex-row">
+      {/* Call interface */}
+      <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-8 min-h-[50vh] md:min-h-0">
+        <div className="text-center mb-6 sm:mb-8">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <div className={`w-2 h-2 rounded-full ${stateColors[training.state]} ${training.state !== 'idle' && training.state !== 'error' ? 'animate-pulse' : ''}`} />
+            <p className="text-slate-400 text-xs sm:text-sm uppercase tracking-wider">{stateLabels[training.state]}</p>
+          </div>
+          <h2 className="text-xl sm:text-2xl font-bold text-white">{scenario.clientName}</h2>
+          <p className="text-slate-500 text-xs sm:text-sm">{scenario.clientTitle} — {scenario.clientCompany}</p>
         </div>
 
-        <p className="text-5xl font-mono text-white mb-6 tabular-nums">
+        <p className="text-4xl sm:text-5xl font-mono text-white mb-6 sm:mb-8 tabular-nums tracking-wider">
           {String(mins).padStart(2, '0')}:{String(secs).padStart(2, '0')}
         </p>
 
-        <div className="relative mb-6">
-          <div className={`w-20 h-20 rounded-full ${stateColors[training.state]} opacity-20 ${training.state === 'listening' || training.state === 'speaking' ? 'animate-ping' : ''}`} />
-          <div className={`absolute inset-2 rounded-full ${stateColors[training.state]}`} />
+        {/* Visual pulse indicator */}
+        <div className="relative mb-6 sm:mb-8">
+          {(training.state === 'listening' || training.state === 'speaking' || training.state === 'connected') && (
+            <>
+              <div className={`absolute inset-[-16px] rounded-full ${training.state === 'speaking' ? 'bg-blue-500/10' : 'bg-emerald-500/10'} animate-ping`} />
+              <div className={`absolute inset-[-8px] rounded-full ${training.state === 'speaking' ? 'bg-blue-500/15' : 'bg-emerald-500/15'} animate-pulse`} />
+            </>
+          )}
+          <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center ${
+            training.state === 'speaking'
+              ? 'bg-gradient-to-br from-blue-500 to-blue-600'
+              : training.state === 'listening'
+              ? 'bg-gradient-to-br from-emerald-500 to-emerald-600'
+              : training.state === 'connecting'
+              ? 'bg-gradient-to-br from-amber-500 to-amber-600'
+              : training.state === 'error'
+              ? 'bg-gradient-to-br from-red-500 to-red-600'
+              : 'bg-gradient-to-br from-slate-600 to-slate-700'
+          } shadow-lg relative`}>
+            {training.state === 'speaking' ? (
+              <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+              </svg>
+            ) : training.state === 'listening' ? (
+              <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
+              </svg>
+            ) : (
+              <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
+              </svg>
+            )}
+          </div>
         </div>
-
-        <p className="text-slate-400 text-sm mb-10">{stateLabels[training.state]}</p>
 
         <button
           onClick={handleHangUp}
-          className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 transition-colors flex items-center justify-center shadow-lg shadow-red-500/25"
+          className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-red-500 hover:bg-red-600 transition-all flex items-center justify-center shadow-lg shadow-red-500/25 hover:shadow-xl hover:shadow-red-500/30 hover:scale-105"
         >
-          <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
+          <svg className="w-6 h-6 sm:w-7 sm:h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08c-.18-.17-.29-.42-.29-.7 0-.28.11-.53.29-.71C3.34 8.78 7.46 7 12 7s8.66 1.78 11.71 4.67c.18.18.29.43.29.71 0 .28-.11.53-.29.71l-2.48 2.48c-.18.18-.43.29-.71.29-.27 0-.52-.11-.7-.28-.79-.74-1.69-1.36-2.67-1.85-.33-.16-.56-.5-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z" />
           </svg>
         </button>
       </div>
 
-      {/* Right side — live transcript */}
-      <div className="w-96 bg-slate-800/50 border-l border-slate-700/50 flex flex-col">
-        <div className="px-4 py-3 border-b border-slate-700/50">
-          <h3 className="text-sm font-semibold text-slate-300">Transcripcion en vivo</h3>
+      {/* Live transcript */}
+      <div className="h-[40vh] md:h-auto md:w-96 bg-slate-800/80 backdrop-blur-sm border-t md:border-t-0 md:border-l border-slate-700/50 flex flex-col">
+        <div className="px-4 py-3 border-b border-slate-700/50 flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-slate-300 flex items-center gap-2">
+            <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+            </svg>
+            Transcripcion en vivo
+          </h3>
+          <span className="text-[10px] text-slate-500 font-mono">{training.transcript.length} msgs</span>
         </div>
-        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-2 sm:space-y-3">
           {training.transcript.length === 0 && (
-            <p className="text-slate-500 text-sm text-center mt-8">La transcripcion aparecera aqui...</p>
+            <div className="flex flex-col items-center justify-center h-full">
+              <svg className="w-8 h-8 text-slate-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
+              </svg>
+              <p className="text-slate-500 text-xs text-center">La transcripcion aparecera aqui...</p>
+            </div>
           )}
           {training.transcript.map((entry: TranscriptEntry, i: number) => (
-            <div key={i} className={`flex ${entry.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[85%] rounded-lg px-3 py-2 text-sm ${
+            <div key={i} className={`flex ${entry.role === 'user' ? 'justify-end' : 'justify-start'} animate-slide-up`}>
+              <div className={`max-w-[85%] rounded-xl px-3 py-2 text-sm ${
                 entry.role === 'user'
-                  ? 'bg-primary/20 text-primary'
-                  : 'bg-slate-700 text-slate-300'
+                  ? 'bg-gradient-to-r from-blue-500/20 to-cyan-500/20 text-blue-200 border border-blue-500/20'
+                  : 'bg-slate-700/80 text-slate-300 border border-slate-600/30'
               }`}>
                 <p className="text-[10px] font-semibold mb-0.5 opacity-60">
                   {entry.role === 'user' ? 'Tu' : scenario.clientName}

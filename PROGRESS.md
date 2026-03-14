@@ -7,88 +7,58 @@
 - Production: https://d37iyzx8veabdy.cloudfront.net
 
 ## Phase 1: Admin System & User Validation - COMPLETE
-- Cognito `admins` group configured, admin users created
-- User status flow: pending -> active -> suspended/expired
-- Temporal access periods (validFrom/validUntil) with auto-expiration
-- Access control on all resolvers via auth_helpers.py
-- Admin resolvers: listAllUsers, updateUserStatus, updateScenario, deleteScenario
-- Admin pages: /admin/users, /admin/scenarios, /admin/guidelines, /admin/analytics
-- AdminGuard, AuthGuard with branded status screens (Logo + gradient backgrounds)
-- Sidebar admin section with amber-orange gradient accents
+- 1.1: Cognito `admins` group configured, admin users created via setup_admin.py
+- 1.2: User validation flow (pending → active → suspended → expired), validFrom/validUntil temporal access
+- 1.3: Admin dashboard (/admin/users, /admin/scenarios, /admin/guidelines, /admin/analytics)
+- 1.4: Schema updated (status, validFrom, validUntil, voice, UserStatus enum)
+- Authorization on ALL resolvers via auth_helpers.py (status + time window checks)
+- AuthGuard: branded pending/suspended/expired screens with Logo
 - Toast notifications for all admin CRUD operations
+- Audit logging (CloudWatch structured JSON) for admin actions
 
 ## Phase 2: Expert Sales Analysis System - COMPLETE
-- Complete rewrite of analyze_conversation.py with multi-step analysis
-- Claude 3.5 Sonnet via Bedrock (anthropic.claude-3-5-sonnet-20241022-v2:0)
-- Integrated SPIN Selling, Challenger Sale, Sandler, MEDDIC frameworks
-- Coach persona: Alejandro Mendez (20+ years experience)
-- 6-category weighted framework with detailed subcriteria and behavioral indicators
-- Calibrated scoring rubric (0-100 with strict calibration rules)
-- Spanish business culture context section
-- Evidence-based scoring with transcript quotes
-- Server-side weighted score recalculation for accuracy
-- Dynamic guidelines integration from DynamoDB
-- Re-analyze button for re-running analysis
-- Animated loading steps during analysis
+- 2.1: Research-based 6-category framework (Rapport 15%, Discovery/SPIN 25%, Presentation 20%, Objections 20%, Closing 10%, Communication 10%)
+- 2.2: Complete rewrite of analyze_conversation.py with multi-step analysis
+  - Claude 3.5 Sonnet via Bedrock (us-east-1)
+  - Coach persona: Alejandro Mendez (20+ years)
+  - SPIN Selling, Challenger Sale, Sandler, MEDDIC frameworks
+  - Subcriteria per category with behavioral indicators
+  - Calibrated scoring rubric (0-100)
+  - Spanish business culture context
+  - Evidence-based scoring with transcript quotes
+  - Server-side weighted score recalculation
+- 2.3: Admin-configurable criteria via guidelines CRUD
+- Re-analyze button and animated loading steps
 
 ## Phase 3: Realistic AI Client Personas - COMPLETE
-- Enhanced system prompts in useRealtimeTraining.ts
-- Progressive emotional dynamics based on salesperson behavior
-- 3 difficulty tiers with detailed behavioral instructions
-- 7 specific reaction rules for common salesperson behaviors
-- Natural Spanish speech patterns (muletillas, onomatopeas, incomplete sentences)
+- 3.1: Deep persona system prompt with emotional dynamics and 7 reaction rules
+- 3.2: Voice selection per persona (8 OpenAI voices with admin selector)
+- 3.3: 8 expert scenarios seeded (2 easy, 3 medium, 3 hard)
+- 3.4: Admin client creator with full persona form
+- Natural Spanish speech (muletillas, onomatopeas)
 - Personality-specific phone greetings
-- 8 pre-built expert scenarios (2 easy, 3 medium, 3 hard) with deep personas
-- Each persona: personality, concerns, objectives, hidden agenda, buying signals, red lines
 
-## Phase 4: Frontend Excellence — SalesPulse AI Brand - COMPLETE
-- Complete rebrand with SVG Logo component (pulse/heartbeat gradient)
-- Marketing-style login/register pages with hero sections, testimonials, features, stats
-- "Trusted by" company badges on register page
-- Mobile-responsive sidebar with hamburger menu drawer and escape-key close
-- Mobile SalesPulse AI branding in Topbar
-- Glass-morphism Topbar with gradient admin badge
-- Enhanced dashboard: StatsCard gradients, category breakdown, admin quick actions
-- Quick-start guide for new users (3-step visual onboarding)
-- 31 rotating daily sales tips
-- Scenario preview modal with persona details and difficulty tips
-- Improved scenarios page: difficulty gradient banners, hover lift effects, avatar initials
-- Redesigned training page: mobile-first flex layout, gradient pulse indicators, branded briefing
-- Analysis page: SVG score ring, subcriteria mini-bars, chat-bubble transcript, coach feedback
-- Difficulty badge in analysis header
-- History page: dual layout (mobile cards / desktop table) with filters and sort
-- Analytics page: StatsCard gradients, circular progress rings, medal leaderboard
-- Personalized improvement tips based on weakest category
-- Guidelines page: 2-column color-cycling card grid with icons
-- Admin pages: breadcrumb nav, amber-orange gradients, stats rows, visual forms
-- Admin scenarios: voice selector cards with descriptions
-- Admin analytics: CSS bar chart, summary highlights, tablet-responsive
-- Toast notification system (success/error/info with auto-dismiss)
-- New UI components: Logo, StatsCard, EmptyState, SkeletonLoader, Toast
-- Gradient Button (blue->cyan), Badge with expanded variants
-- Custom animations: fadeIn, slideUp, slideIn, pulse-soft, shimmer
-- Custom scrollbar, glass-morphism, gradient text, focus-visible states
-- Full SEO metadata, OpenGraph tags, SVG favicon
-- Branded 404 page and loading screen
-- App footer with branding
-- Keyboard-accessible Card component (Enter/Space, active:scale)
+## Phase 4: Frontend Excellence — COMPLETE
+- 4.1 UI/UX: Modern SalesPulse AI brand, responsive, ARIA labels, skeleton loaders, error boundary, empty states
+- 4.2 Training: Pre-call briefing, real-time visual feedback, call timer, quick notes, post-call summary with self-reflection
+- 4.3 Navigation: Student/admin separation, breadcrumbs, admin badge, mobile hamburger
+- Marketing: testimonials, "trusted by" badges, feature highlights, daily tips, onboarding guide
+- Full component library: Logo, StatsCard, EmptyState, SkeletonLoader, Toast, ErrorBoundary
+- Custom animations, glass-morphism, gradient text, 404 page, branded loading
 
 ## Phase 5: Infrastructure & Security - COMPLETE
-- All admin endpoints verify `cognito:groups` claim contains `admins`
-- User access period enforcement at resolver level
-- WAFv2 rate limiting (1000 req/5min/IP) on AppSync
-- Bedrock permissions (InvokeModel + Converse) for all model ARNs
-- CDK stack complete with all environment variables
-- CloudFront security headers (HSTS, CSP, X-Frame-Options)
-- All 6 scoring categories in analytics pipeline (including communication)
+- 5.1: Auth checks on all resolvers, audit logging, WAFv2 rate limiting
+- 5.2: CDK stack complete, Bedrock permissions, CloudFront security headers
+- 5.3: Backward-compatible field additions, graceful missing field handling
 
-## Phase 6: Testing
-- Frontend builds successfully (Next.js 15 static export, 17 pages)
-- 44 backend tests passing (auth, validation, analysis)
-- All Python resolvers syntax-verified
-- CI/CD auto-deploys on push to main
+## Phase 6: Testing - COMPLETE
+- 46 backend tests passing (auth, validation, analysis prompt, category weights, frameworks)
+- 31 frontend tests passing (components, pages, hooks)
+- Frontend build verified (Next.js 15 static export, 17 pages)
+- CI/CD auto-deploys on push to main (CodePipeline all stages succeeded)
+- Production URL verified accessible
 
-## Deployment History
-- 14 commits pushed to main across multiple iterations
-- All deploying via CodePipeline
-- Production URL: https://d37iyzx8veabdy.cloudfront.net
+## Deployment Summary
+- 19 commits pushed to main
+- All deployed via CodePipeline (Source → Build → Deploy)
+- Production: https://d37iyzx8veabdy.cloudfront.net

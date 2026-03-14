@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { AdminGuard } from '@/components/layout/AdminGuard';
 import { useQuery } from '@/hooks/useGraphQL';
@@ -9,6 +9,7 @@ import { Spinner } from '@/components/ui/Spinner';
 import { Card } from '@/components/ui/Card';
 import { StatsCard } from '@/components/ui/StatsCard';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { Button } from '@/components/ui/Button';
 import type { LeaderboardEntry, User } from '@/types';
 
 export default function AdminAnalyticsPage() {
@@ -33,6 +34,22 @@ function AnalyticsContent() {
       </div>
     );
   }
+
+  const handleExportJSON = useCallback(() => {
+    if (!leaderboard?.entries) return;
+    const data = {
+      exportDate: new Date().toISOString(),
+      platform: 'SalesPulse AI',
+      entries: leaderboard.entries,
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `salespulse-analytics-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [leaderboard]);
 
   const entries = leaderboard?.entries || [];
   const users = (usersData as any)?.items || [];
@@ -75,11 +92,21 @@ function AnalyticsContent() {
       </nav>
 
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
-          Rendimiento Global
-        </h1>
-        <p className="text-slate-400 mt-2">Vista general del rendimiento de todos los usuarios.</p>
+      <div className="mb-8 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
+            Rendimiento Global
+          </h1>
+          <p className="text-slate-400 mt-2">Vista general del rendimiento de todos los usuarios.</p>
+        </div>
+        <Button variant="secondary" size="sm" onClick={handleExportJSON}>
+          <span className="flex items-center gap-2">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+            </svg>
+            Exportar JSON
+          </span>
+        </Button>
       </div>
 
       {/* Stats Grid */}

@@ -87,6 +87,7 @@ export default function TrainingPage() {
 
   const training = useRealtimeTraining(scenario || ({} as Scenario));
 
+  useEffect(() => { document.title = 'Entrenamiento | SalesPulse AI'; }, []);
   useEffect(() => {
     if (!scenarioId) { router.replace('/scenarios'); return; }
     scenarios.execute().then((list: Scenario[]) => {

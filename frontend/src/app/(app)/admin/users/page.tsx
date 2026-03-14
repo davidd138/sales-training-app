@@ -50,6 +50,7 @@ function UsersContent() {
   const [editingUser, setEditingUser] = useState<string | null>(null);
   const [validFrom, setValidFrom] = useState('');
   const [validUntil, setValidUntil] = useState('');
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   useEffect(() => { fetchUsers().catch(() => {}); }, [fetchUsers]);
 
@@ -188,13 +189,13 @@ function UsersContent() {
                 return (
                   <tr key={u.userId} className="border-b border-slate-700/30 last:border-0 hover:bg-slate-700/20 transition-colors">
                     <td className="px-5 py-4">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 cursor-pointer group/user" onClick={() => setSelectedUser(u)}>
                         <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${STATUS_COLORS[status]} flex items-center justify-center text-white text-sm font-bold shrink-0`}>
                           {(u.name || u.email || '?')[0].toUpperCase()}
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-white">{u.name || '-'}</p>
-                          <p className="text-xs text-slate-400">{u.email}</p>
+                          <p className="text-sm font-medium text-white group-hover/user:text-amber-400 transition-colors">{u.name || '-'}</p>
+                          <p className="text-xs text-slate-400 group-hover/user:text-slate-300 transition-colors">{u.email}</p>
                         </div>
                       </div>
                     </td>
@@ -248,13 +249,13 @@ function UsersContent() {
           return (
             <Card key={u.userId} className="!p-4">
               <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 cursor-pointer group/user" onClick={() => setSelectedUser(u)}>
                   <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${STATUS_COLORS[status]} flex items-center justify-center text-white text-sm font-bold shrink-0`}>
                     {(u.name || u.email || '?')[0].toUpperCase()}
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-white">{u.name || '-'}</p>
-                    <p className="text-xs text-slate-400">{u.email}</p>
+                    <p className="text-sm font-semibold text-white group-hover/user:text-amber-400 transition-colors">{u.name || '-'}</p>
+                    <p className="text-xs text-slate-400 group-hover/user:text-slate-300 transition-colors">{u.email}</p>
                   </div>
                 </div>
                 <span className={`inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full ${STATUS_BG[status]}`}>
@@ -302,6 +303,96 @@ function UsersContent() {
           />
         )}
       </div>
+
+      {/* User Detail Modal */}
+      {selectedUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setSelectedUser(null)}>
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <div
+            className="relative w-full max-w-md bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl animate-fade-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700/50">
+              <h3 className="text-lg font-semibold text-white">Detalle de Usuario</h3>
+              <button
+                onClick={() => setSelectedUser(null)}
+                className="w-8 h-8 rounded-full bg-slate-700 hover:bg-slate-600 flex items-center justify-center text-slate-400 hover:text-white transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="px-6 py-5 space-y-5">
+              {/* Avatar & Name */}
+              <div className="flex items-center gap-4">
+                <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${STATUS_COLORS[(selectedUser.status || 'pending') as UserStatus]} flex items-center justify-center text-white text-xl font-bold shrink-0`}>
+                  {(selectedUser.name || selectedUser.email || '?')[0].toUpperCase()}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-lg font-semibold text-white truncate">{selectedUser.name || '-'}</p>
+                  <p className="text-sm text-slate-400 truncate">{selectedUser.email}</p>
+                </div>
+              </div>
+
+              {/* Info Grid */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-slate-700/30 rounded-lg p-3">
+                  <p className="text-xs text-slate-400 mb-1">Estado</p>
+                  <span className={`inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full ${STATUS_BG[(selectedUser.status || 'pending') as UserStatus]}`}>
+                    {STATUS_LABELS[(selectedUser.status || 'pending') as UserStatus]}
+                  </span>
+                </div>
+                <div className="bg-slate-700/30 rounded-lg p-3">
+                  <p className="text-xs text-slate-400 mb-1">Rol</p>
+                  <p className="text-sm font-medium text-white capitalize">
+                    {selectedUser.role === 'admin' ? 'Administrador' : 'Usuario'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Access Period */}
+              <div className="bg-slate-700/30 rounded-lg p-3">
+                <p className="text-xs text-slate-400 mb-2">Periodo de Acceso</p>
+                {selectedUser.validFrom || selectedUser.validUntil ? (
+                  <div className="space-y-1">
+                    {selectedUser.validFrom && (
+                      <p className="text-sm text-slate-300">
+                        <span className="text-slate-400">Desde:</span>{' '}
+                        {new Date(selectedUser.validFrom).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}
+                      </p>
+                    )}
+                    {selectedUser.validUntil && (
+                      <p className="text-sm text-slate-300">
+                        <span className="text-slate-400">Hasta:</span>{' '}
+                        {new Date(selectedUser.validUntil).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-sm text-slate-500 italic">Sin periodo configurado</p>
+                )}
+              </div>
+
+              {/* User ID */}
+              <div className="bg-slate-700/30 rounded-lg p-3">
+                <p className="text-xs text-slate-400 mb-1">ID de Usuario</p>
+                <p className="text-xs text-slate-500 font-mono break-all">{selectedUser.userId}</p>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t border-slate-700/50 flex justify-end">
+              <Button variant="secondary" size="sm" onClick={() => setSelectedUser(null)}>
+                Cerrar
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

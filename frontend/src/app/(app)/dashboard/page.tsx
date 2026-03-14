@@ -175,6 +175,23 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {/* Welcome banner for new users */}
+      {!isAdmin && a && a.totalSessions === 0 && user?.status === 'active' && (
+        <div className="bg-gradient-to-r from-blue-500/10 via-cyan-500/10 to-blue-500/10 border border-blue-500/20 rounded-xl p-5 animate-slide-up">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shrink-0">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-white font-semibold text-lg">Bienvenido a SalesPulse AI</h2>
+              <p className="text-slate-400 text-sm mt-1">Tu cuenta ha sido aprobada. Empieza tu primer entrenamiento y descubre como la IA puede ayudarte a mejorar tus ventas.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Stats grid */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatsCard

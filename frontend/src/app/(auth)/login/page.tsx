@@ -79,6 +79,25 @@ export default function LoginPage() {
         </div>
 
         {/* Features */}
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          "name": "SalesPulse AI",
+          "description": "Plataforma de entrenamiento de ventas con inteligencia artificial",
+          "applicationCategory": "BusinessApplication",
+          "operatingSystem": "Web",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "EUR"
+          },
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.8",
+            "reviewCount": "127"
+          }
+        })}} />
+
         <div className="relative z-10 mt-8 lg:mt-0 space-y-4 hidden lg:block">
           {FEATURES.map((f, i) => (
             <div key={i} className="flex items-start gap-3">

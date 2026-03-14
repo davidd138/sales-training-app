@@ -81,6 +81,7 @@ export default function ScenariosPage() {
   const { data, loading, execute } = useQuery<Scenario[]>(LIST_SCENARIOS);
   const [selectedScenario, setSelectedScenario] = useState<Scenario | null>(null);
 
+  useEffect(() => { document.title = 'Escenarios | SalesPulse AI'; }, []);
   useEffect(() => { execute().catch(() => {}); }, []);
 
   const scenarios = [...(data || [])].sort((a, b) =>

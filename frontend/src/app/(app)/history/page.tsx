@@ -53,6 +53,7 @@ export default function HistoryPage() {
     }
   }, [execute]);
 
+  useEffect(() => { document.title = 'Historial | SalesPulse AI'; }, []);
   useEffect(() => { loadMore().catch(() => {}); }, []);
 
   const filteredItems = allItems

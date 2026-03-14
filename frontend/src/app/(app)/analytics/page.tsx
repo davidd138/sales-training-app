@@ -68,6 +68,7 @@ export default function AnalyticsPage() {
   const analytics = useQuery<Analytics>(GET_ANALYTICS);
   const leaderboard = useQuery<{ entries: LeaderboardEntry[] }>(GET_LEADERBOARD);
 
+  useEffect(() => { document.title = 'Estadisticas | SalesPulse AI'; }, []);
   useEffect(() => {
     analytics.execute().catch(() => {});
     leaderboard.execute().catch(() => {});
@@ -125,6 +126,42 @@ export default function AnalyticsPage() {
               </svg>
             }
           />
+        </div>
+      )}
+
+      {/* Score trend */}
+      {a && a.recentScores && a.recentScores.length > 1 && (
+        <div className="glass rounded-2xl p-5 sm:p-6 animate-slide-up">
+          <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18L9 11.25l4.306 4.306a11.95 11.95 0 015.814-5.518l2.74-1.22m0 0l-5.94-2.281m5.94 2.28l-2.28 5.941" />
+            </svg>
+            Tendencia de rendimiento
+          </h2>
+          <div className="relative h-40 flex items-end gap-1">
+            {a.recentScores.slice(-10).map((score, i, arr) => {
+              const height = `${Math.max(score.overallScore, 5)}%`;
+              const isLast = i === arr.length - 1;
+              return (
+                <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                  <span className={`text-[10px] font-medium ${scoreColor(score.overallScore)}`}>
+                    {score.overallScore}
+                  </span>
+                  <div
+                    className={`w-full rounded-t transition-all duration-700 ${
+                      score.overallScore >= 80 ? 'bg-gradient-to-t from-emerald-500/40 to-emerald-500/10' :
+                      score.overallScore >= 60 ? 'bg-gradient-to-t from-amber-500/40 to-amber-500/10' :
+                      'bg-gradient-to-t from-red-500/40 to-red-500/10'
+                    } ${isLast ? 'ring-2 ring-blue-400/50' : ''}`}
+                    style={{ height }}
+                  />
+                  <span className="text-[9px] text-slate-500 truncate w-full text-center">
+                    {new Date(score.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 

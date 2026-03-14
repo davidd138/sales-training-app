@@ -8,9 +8,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <AuthGuard>
       <Sidebar />
-      <div className="ml-64 min-h-screen flex flex-col">
+      <div className="md:ml-64 min-h-screen flex flex-col">
         <Topbar />
-        <main className="flex-1 p-6">{children}</main>
+        <main className="flex-1 p-4 sm:p-6">{children}</main>
       </div>
     </AuthGuard>
   );

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@/hooks/useGraphQL';
@@ -13,6 +13,8 @@ import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 import { StatsCard } from '@/components/ui/StatsCard';
 import { EmptyState } from '@/components/ui/EmptyState';
 import type { Analytics, User } from '@/types';
+import { ACHIEVEMENTS, getUnlockedAchievements } from '@/lib/achievements';
+import type { AchievementStats } from '@/lib/achievements';
 
 function scoreColor(score: number) {
   if (score >= 80) return 'text-emerald-400';
@@ -76,6 +78,52 @@ export default function DashboardPage() {
 
   const a = analytics.data;
   const pendingCount = (allUsers.data as any)?.items?.filter((u: User) => (u.status || 'pending') === 'pending' && u.role !== 'admin').length || 0;
+
+  const achievementStats = useMemo<AchievementStats | null>(() => {
+    if (!a) return null;
+    const scores = a.recentScores || [];
+    const bestScore = scores.length > 0 ? Math.max(...scores.map(s => s.overallScore)) : 0;
+    const scenariosPlayed = new Set(scores.map(s => s.scenarioName)).size;
+
+    // Calculate consecutive days from recent scores dates
+    let consecutiveDays = 0;
+    if (scores.length > 0) {
+      const uniqueDates = [...new Set(scores.map(s => s.date.split('T')[0]))].sort().reverse();
+      consecutiveDays = 1;
+      for (let i = 1; i < uniqueDates.length; i++) {
+        const prev = new Date(uniqueDates[i - 1]);
+        const curr = new Date(uniqueDates[i]);
+        const diffMs = prev.getTime() - curr.getTime();
+        if (diffMs <= 86400000 * 1.5) {
+          consecutiveDays++;
+        } else {
+          break;
+        }
+      }
+    }
+
+    // Heuristic for difficulties played based on session count
+    const difficulties: string[] = [];
+    if (a.totalSessions >= 1) difficulties.push('facil');
+    if (a.totalSessions >= 3) difficulties.push('intermedio');
+    if (a.totalSessions >= 6) difficulties.push('dificil');
+
+    return {
+      totalSessions: a.totalSessions,
+      bestScore,
+      avgScore: a.avgOverallScore,
+      difficultiesPlayed: difficulties,
+      consecutiveDays,
+      scenariosPlayed,
+    };
+  }, [a]);
+
+  const unlockedAchievements = useMemo(() => {
+    if (!achievementStats) return [];
+    return getUnlockedAchievements(achievementStats);
+  }, [achievementStats]);
+
+  const unlockedIds = useMemo(() => new Set(unlockedAchievements.map(ua => ua.id)), [unlockedAchievements]);
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 animate-fade-in">
@@ -160,6 +208,43 @@ export default function DashboardPage() {
           }
         />
       </div>
+
+      {/* Achievements / Logros */}
+      {a && (
+        <Card>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-white">Logros</h2>
+            <span className="text-sm text-slate-400">
+              {unlockedAchievements.length} de {ACHIEVEMENTS.length} logros desbloqueados
+            </span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {ACHIEVEMENTS.map((achievement) => {
+              const unlocked = unlockedIds.has(achievement.id);
+              return (
+                <div
+                  key={achievement.id}
+                  className={`relative rounded-xl p-4 text-center transition-all ${
+                    unlocked
+                      ? 'bg-gradient-to-br from-slate-700/50 to-slate-800/50 border border-blue-500/30 shadow-lg shadow-blue-500/5'
+                      : 'bg-slate-800/30 border border-slate-700/30 opacity-40'
+                  }`}
+                >
+                  <div className="text-3xl mb-2">
+                    {unlocked ? achievement.icon : '🔒'}
+                  </div>
+                  <p className={`text-sm font-semibold ${unlocked ? 'text-white' : 'text-slate-500'}`}>
+                    {achievement.title}
+                  </p>
+                  <p className={`text-xs mt-1 ${unlocked ? 'text-slate-400' : 'text-slate-600'}`}>
+                    {achievement.description}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+      )}
 
       {/* Category breakdown */}
       {a && a.totalSessions > 0 && (

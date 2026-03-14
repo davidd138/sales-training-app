@@ -28,6 +28,34 @@ const CATEGORIES = [
   { key: 'Cierre', userKey: 'avgClosing', teamKey: 'teamAvgClosing', icon: '🎯' },
 ] as const;
 
+const IMPROVEMENT_TIPS: Record<string, string[]> = {
+  'Rapport': [
+    'Dedica los primeros 2-3 minutos a conectar personalmente antes de hablar de negocios.',
+    'Investiga a tu interlocutor en LinkedIn antes de la llamada para encontrar puntos en comun.',
+    'Usa el nombre del cliente con frecuencia y muestra interes genuino por su contexto.',
+  ],
+  'Discovery': [
+    'Usa mas preguntas de Implicacion (SPIN) para amplificar el dolor del cliente.',
+    'No saltes a la solucion demasiado pronto. Profundiza con "¿Y que impacto tiene eso?".',
+    'Prepara al menos 10 preguntas de descubrimiento antes de cada llamada.',
+  ],
+  'Presentacion': [
+    'Estructura tu propuesta con el framework "Problema - Solucion - Beneficio".',
+    'Usa historias de clientes similares para hacer tu presentacion mas creible.',
+    'Conecta cada caracteristica con un beneficio concreto y cuantificable para el cliente.',
+  ],
+  'Objeciones': [
+    'Usa la tecnica "Siente, Sintio, Descubrio" para empatizar antes de responder.',
+    'Nunca contradigas directamente. Valida primero con "Entiendo tu preocupacion...".',
+    'Prepara respuestas para las 5 objeciones mas comunes de tu sector.',
+  ],
+  'Cierre': [
+    'Usa cierres de prueba durante la conversacion: "¿Esto resolveria tu problema?".',
+    'No tengas miedo de pedir el cierre. Muchas ventas se pierden por no preguntar.',
+    'Propone siempre un siguiente paso concreto con fecha y hora.',
+  ],
+};
+
 function getMedalIcon(position: number) {
   if (position === 0) return <span className="text-lg">🥇</span>;
   if (position === 1) return <span className="text-lg">🥈</span>;
@@ -251,6 +279,40 @@ export default function AnalyticsPage() {
           </div>
         </div>
       )}
+
+      {/* Motivational tips based on weakest category */}
+      {a && (() => {
+        const scores = CATEGORIES.map(c => ({
+          key: c.key,
+          value: (a as any)[c.userKey] as number,
+          icon: c.icon,
+        }));
+        const weakest = scores.reduce((min, s) => s.value < min.value ? s : min, scores[0]);
+        const tips = IMPROVEMENT_TIPS[weakest.key] || [];
+        return (
+          <div className="glass rounded-2xl p-5 sm:p-6 animate-slide-up">
+            <h2 className="text-lg font-semibold text-white mb-2 flex items-center gap-2">
+              <svg className="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
+              </svg>
+              Consejos para mejorar
+            </h2>
+            <p className="text-slate-400 text-sm mb-4">
+              Tu punto mas debil es <span className="text-amber-400 font-semibold">{weakest.icon} {weakest.key}</span> con una puntuacion de <span className="text-amber-400 font-semibold">{Math.round(weakest.value)}</span>. Aqui tienes consejos para mejorar:
+            </p>
+            <div className="space-y-3">
+              {tips.map((tip, i) => (
+                <div key={i} className="flex items-start gap-3 bg-slate-800/40 rounded-xl p-3 border border-slate-700/30">
+                  <div className="w-6 h-6 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="text-amber-400 text-xs font-bold">{i + 1}</span>
+                  </div>
+                  <p className="text-slate-300 text-sm">{tip}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

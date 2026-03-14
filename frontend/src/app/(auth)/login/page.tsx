@@ -14,6 +14,11 @@ const FEATURES = [
   { icon: 'M13 10V3L4 14h7v7l9-11h-7z', title: 'Mejora Continua', desc: 'Monitoriza tu progreso y compite con tu equipo en el ranking' },
 ];
 
+const TESTIMONIALS = [
+  { name: 'Carlos Ruiz', role: 'Director Comercial, Iberenergy', text: 'SalesPulse ha transformado como entrenamos a nuestro equipo. Los nuevos comerciales alcanzan productividad en la mitad de tiempo.' },
+  { name: 'Elena Vidal', role: 'VP Ventas, TechSolutions', text: 'El analisis con IA es increiblemente preciso. Identifica patrones que los managers humanos no detectamos.' },
+];
+
 const STATS = [
   { value: '8+', label: 'Escenarios' },
   { value: '6', label: 'Categorias de analisis' },
@@ -85,6 +90,24 @@ export default function LoginPage() {
               <div>
                 <p className="text-white font-medium text-sm">{f.title}</p>
                 <p className="text-slate-400 text-sm">{f.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Testimonials */}
+        <div className="relative z-10 mt-8 lg:mt-0 space-y-3 hidden lg:block">
+          {TESTIMONIALS.map((t, i) => (
+            <div key={i} className="bg-slate-700/30 rounded-xl p-4 border border-slate-600/30">
+              <div className="flex items-start gap-3">
+                <span className="text-2xl text-blue-400 leading-none shrink-0">&ldquo;</span>
+                <div>
+                  <p className="text-slate-300 text-sm italic">{t.text}</p>
+                  <div className="mt-2">
+                    <p className="text-white text-sm font-medium">{t.name}</p>
+                    <p className="text-slate-500 text-xs">{t.role}</p>
+                  </div>
+                </div>
               </div>
             </div>
           ))}

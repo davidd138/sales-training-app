@@ -8,6 +8,14 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Logo } from '@/components/ui/Logo';
 
+const TESTIMONIALS = [
+  { name: 'Carlos Ruiz', role: 'Director Comercial, Iberenergy', text: 'SalesPulse ha transformado como entrenamos a nuestro equipo. Los nuevos comerciales alcanzan productividad en la mitad de tiempo.' },
+  { name: 'Elena Vidal', role: 'VP Ventas, TechSolutions', text: 'El analisis con IA es increiblemente preciso. Identifica patrones que los managers humanos no detectamos.' },
+  { name: 'Marta Gomez', role: 'Head of Sales, DataVerde', text: 'Nuestro ratio de cierre ha subido un 23% desde que usamos SalesPulse. Es como tener un coach de ventas disponible las 24h.' },
+];
+
+const TRUSTED_BY = ['Iberenergy', 'TechSolutions', 'DataVerde', 'NovaPay', 'CloudIberia'];
+
 const BENEFITS = [
   'Practica ilimitada con clientes IA realistas',
   'Analisis basado en SPIN Selling y Challenger Sale',
@@ -120,16 +128,33 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        <div className="relative z-10 mt-8 lg:mt-0 hidden lg:block">
-          <div className="flex items-center gap-3 bg-slate-700/30 rounded-xl p-4 border border-slate-600/30">
-            <div className="flex -space-x-2">
-              {['bg-blue-500', 'bg-emerald-500', 'bg-amber-500', 'bg-purple-500'].map((c, i) => (
-                <div key={i} className={`w-8 h-8 rounded-full ${c} border-2 border-slate-800 flex items-center justify-center text-white text-xs font-bold`}>
-                  {String.fromCharCode(65 + i)}
+        {/* Testimonials */}
+        <div className="relative z-10 mt-8 lg:mt-0 space-y-3 hidden lg:block">
+          {TESTIMONIALS.map((t, i) => (
+            <div key={i} className="bg-slate-700/30 rounded-xl p-4 border border-slate-600/30">
+              <div className="flex items-start gap-3">
+                <span className="text-2xl text-blue-400 leading-none shrink-0">&ldquo;</span>
+                <div>
+                  <p className="text-slate-300 text-sm italic">{t.text}</p>
+                  <div className="mt-2">
+                    <p className="text-white text-sm font-medium">{t.name}</p>
+                    <p className="text-slate-500 text-xs">{t.role}</p>
+                  </div>
                 </div>
-              ))}
+              </div>
             </div>
-            <p className="text-slate-300 text-sm">Unete a los equipos que ya estan mejorando</p>
+          ))}
+        </div>
+
+        {/* Trusted by */}
+        <div className="relative z-10 mt-8 lg:mt-0 hidden lg:block">
+          <p className="text-slate-500 text-xs uppercase tracking-wider mb-3">Empresas que confian en nosotros</p>
+          <div className="flex flex-wrap gap-2">
+            {TRUSTED_BY.map((company, i) => (
+              <span key={i} className="px-3 py-1.5 rounded-full bg-slate-700/40 border border-slate-600/30 text-slate-300 text-xs font-medium">
+                {company}
+              </span>
+            ))}
           </div>
         </div>
       </div>

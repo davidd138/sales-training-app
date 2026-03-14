@@ -54,8 +54,16 @@ export function useRealtimeTraining(scenario: any) {
   const connect = useCallback(async () => {
     setState('connecting');
     try {
-      const result = await getClient().graphql({ query: GET_REALTIME_TOKEN });
-      const { token } = (result as any).data.getRealtimeToken;
+      // Request mic permission FIRST, while still in user gesture context
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          sampleRate: SAMPLE_RATE,
+          channelCount: CHANNELS,
+          echoCancellation: true,
+          noiseSuppression: true,
+        },
+      });
+      micStreamRef.current = stream;
 
       // Create AudioContext during user gesture for Safari
       const pCtx = new AudioContext({ sampleRate: SAMPLE_RATE });
@@ -64,6 +72,13 @@ export function useRealtimeTraining(scenario: any) {
       playbackCtxRef.current = pCtx;
       playbackGainRef.current = gain;
       nextPlayTimeRef.current = 0;
+
+      // Create mic AudioContext in user gesture too
+      const micAudioCtx = new AudioContext({ sampleRate: SAMPLE_RATE });
+      micCtxRef.current = micAudioCtx;
+
+      const result = await getClient().graphql({ query: GET_REALTIME_TOKEN });
+      const { token } = (result as any).data.getRealtimeToken;
 
       const ws = new WebSocket(
         'wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview',
@@ -90,7 +105,7 @@ export function useRealtimeTraining(scenario: any) {
           },
         }));
         setState('connected');
-        startMicStream(ws);
+        startMicStream(ws, stream, micAudioCtx);
       };
 
       ws.onmessage = (event) => {
@@ -181,21 +196,8 @@ export function useRealtimeTraining(scenario: any) {
     nextPlayTimeRef.current = startTime + buffer.duration;
   }, []);
 
-  const startMicStream = useCallback(async (ws: WebSocket) => {
+  const startMicStream = useCallback((ws: WebSocket, stream: MediaStream, audioCtx: AudioContext) => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          sampleRate: SAMPLE_RATE,
-          channelCount: CHANNELS,
-          echoCancellation: true,
-          noiseSuppression: true,
-        },
-      });
-      micStreamRef.current = stream;
-
-      const audioCtx = new AudioContext({ sampleRate: SAMPLE_RATE });
-      micCtxRef.current = audioCtx;
-
       const source = audioCtx.createMediaStreamSource(stream);
       const processor = audioCtx.createScriptProcessor(4096, 1, 1);
       micProcessorRef.current = processor;
@@ -222,9 +224,8 @@ export function useRealtimeTraining(scenario: any) {
 
       source.connect(processor);
       processor.connect(audioCtx.destination);
-      setState('connected');
     } catch (e) {
-      console.error('Mic access failed:', e);
+      console.error('Mic setup failed:', e);
       setState('error');
     }
   }, []);

@@ -9,7 +9,7 @@ guidelines_table = boto3.resource("dynamodb").Table(os.environ["GUIDELINES_TABLE
 scenarios_table = boto3.resource("dynamodb").Table(os.environ["SCENARIOS_TABLE"])
 bedrock = boto3.client("bedrock-runtime")
 
-MODEL_ID = "us.anthropic.claude-sonnet-4-20250514-v1:0"
+MODEL_ID = "eu.anthropic.claude-sonnet-4-20250514-v1:0"
 
 
 def handler(event, context):

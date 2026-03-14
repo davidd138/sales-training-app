@@ -18,8 +18,9 @@ export default function TrainingCallScreen({ route, navigation }: Props) {
   const { scenario } = route.params;
   const [elapsed, setElapsed] = useState(0);
   const [conversationId, setConversationId] = useState<string | null>(null);
-  const startTimeRef = useRef(Date.now());
+  const startTimeRef = useRef<number>(0);
   const timerRef = useRef<any>(null);
+  const timerStartedRef = useRef(false);
 
   const createConv = useMutation(CREATE_CONVERSATION);
   const updateConv = useMutation(UPDATE_CONVERSATION);
@@ -46,15 +47,14 @@ export default function TrainingCallScreen({ route, navigation }: Props) {
   }, []);
 
   useEffect(() => {
-    if (state === 'connected' || state === 'speaking' || state === 'listening') {
+    const isActive = state === 'connected' || state === 'speaking' || state === 'listening';
+    if (isActive && !timerStartedRef.current) {
+      timerStartedRef.current = true;
       startTimeRef.current = Date.now();
       timerRef.current = setInterval(() => {
         setElapsed(Math.floor((Date.now() - startTimeRef.current) / 1000));
       }, 1000);
     }
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
   }, [state]);
 
   const handleHangUp = useCallback(async () => {
@@ -96,6 +96,8 @@ export default function TrainingCallScreen({ route, navigation }: Props) {
       ? 'Hablando...'
       : state === 'connected'
       ? 'Conectado'
+      : state === 'error'
+      ? 'Error de conexión'
       : '';
 
   return (
@@ -108,7 +110,14 @@ export default function TrainingCallScreen({ route, navigation }: Props) {
 
       <View style={styles.centerSection}>
         <Text style={styles.timer}>{formatTime(elapsed)}</Text>
-        <Text style={styles.stateLabel}>{stateLabel}</Text>
+        <Text style={[styles.stateLabel, state === 'error' && styles.errorLabel]}>
+          {stateLabel}
+        </Text>
+        {state === 'error' && (
+          <TouchableOpacity style={styles.retryButton} onPress={connect}>
+            <Text style={styles.retryText}>Reintentar</Text>
+          </TouchableOpacity>
+        )}
         {(state === 'listening' || state === 'speaking') && (
           <View
             style={[
@@ -197,5 +206,22 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '700',
+  },
+  errorLabel: {
+    color: '#EF4444',
+  },
+  retryButton: {
+    marginTop: 16,
+    backgroundColor: '#1E293B',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  retryText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

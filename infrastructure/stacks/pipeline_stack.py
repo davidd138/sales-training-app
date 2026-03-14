@@ -55,7 +55,7 @@ class PipelineStack(cdk.Stack):
                 commands=[
                     "n 20",
                     "cd frontend && npm ci && npm run build",
-                    "aws s3 sync frontend/out/ s3://dev-st-frontend-890742600627/ --delete",
+                    "aws s3 sync out/ s3://dev-st-frontend-890742600627/ --delete",
                     'DIST_ID=$(aws cloudformation describe-stacks --stack-name SalesTrainingDev-FrontendStack --query "Stacks[0].Outputs[?OutputKey==\'DistributionId\'].OutputValue" --output text --region eu-west-1)',
                     'aws cloudfront create-invalidation --distribution-id "$DIST_ID" --paths "/*" --region eu-west-1',
                 ],

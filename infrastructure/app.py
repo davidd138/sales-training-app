@@ -10,7 +10,7 @@ BackendStack(
     "sales-training-dev",
     env_name="dev",
     env=cdk.Environment(
-        account="008996491306",
+        account="890742600627",
         region="eu-west-1",
     ),
 )

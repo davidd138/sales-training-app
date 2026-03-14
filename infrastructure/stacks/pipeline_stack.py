@@ -34,7 +34,7 @@ class PipelineStack(cdk.Stack):
         pipeline.add_stage(
             AppStage(
                 self,
-                "Dev",
+                "SalesTrainingDev",
                 env_name="dev",
                 env=cdk.Environment(
                     account="890742600627",

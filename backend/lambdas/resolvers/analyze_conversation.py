@@ -12,7 +12,8 @@ guidelines_table = boto3.resource("dynamodb").Table(os.environ["GUIDELINES_TABLE
 scenarios_table = boto3.resource("dynamodb").Table(os.environ["SCENARIOS_TABLE"])
 bedrock = boto3.client("bedrock-runtime", region_name="us-east-1")
 
-MODEL_ID = os.environ.get("BEDROCK_MODEL_ID", "anthropic.claude-3-5-sonnet-20241022-v2:0")
+# Use cross-region inference profile for on-demand access
+MODEL_ID = os.environ.get("BEDROCK_MODEL_ID", "us.anthropic.claude-3-5-sonnet-20241022-v2:0")
 
 # Category weights for overall score calculation
 CATEGORY_WEIGHTS = {

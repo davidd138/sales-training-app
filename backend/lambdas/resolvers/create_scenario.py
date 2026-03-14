@@ -3,6 +3,7 @@ import uuid
 from datetime import datetime, timezone
 import boto3
 from auth_helpers import check_admin_access
+from audit_helpers import log_admin_action
 
 scenarios_table = boto3.resource("dynamodb").Table(os.environ["SCENARIOS_TABLE"])
 
@@ -29,4 +30,7 @@ def handler(event, context):
         "createdAt": datetime.now(timezone.utc).isoformat(),
     }
     scenarios_table.put_item(Item=item)
+
+    log_admin_action(user_id, "CREATE_SCENARIO", item["id"], {"name": item["name"]})
+
     return item

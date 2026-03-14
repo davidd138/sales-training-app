@@ -7,6 +7,7 @@ import { LIST_CONVERSATIONS } from '@/lib/graphql/queries';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
+import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 import { EmptyState } from '@/components/ui/EmptyState';
 
 function scoreColor(score: number) {
@@ -109,7 +110,11 @@ export default function HistoryPage() {
       )}
 
       {loading && allItems.length === 0 ? (
-        <div className="flex justify-center py-12"><Spinner /></div>
+        <div className="space-y-3">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <SkeletonLoader key={i} variant="card" />
+          ))}
+        </div>
       ) : allItems.length === 0 ? (
         <div className="glass rounded-2xl">
           <EmptyState

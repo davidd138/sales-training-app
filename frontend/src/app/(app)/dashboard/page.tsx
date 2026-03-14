@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
+import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 import { StatsCard } from '@/components/ui/StatsCard';
 import { EmptyState } from '@/components/ui/EmptyState';
 import type { Analytics, User } from '@/types';
@@ -238,7 +239,11 @@ export default function DashboardPage() {
           </button>
         </div>
         {conversations.loading && !conversations.data ? (
-          <div className="flex justify-center py-8"><Spinner /></div>
+          <div className="space-y-2">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <SkeletonLoader key={i} variant="card" />
+            ))}
+          </div>
         ) : conversations.data?.items.length === 0 ? (
           <EmptyState
             title="Sin sesiones todavia"

@@ -6,6 +6,7 @@ import { useQuery } from '@/hooks/useGraphQL';
 import { LIST_SCENARIOS } from '@/lib/graphql/queries';
 import { Badge } from '@/components/ui/Badge';
 import { Spinner } from '@/components/ui/Spinner';
+import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 import { Button } from '@/components/ui/Button';
 import type { Scenario } from '@/types';
 
@@ -106,7 +107,11 @@ export default function ScenariosPage() {
       </div>
 
       {loading && !data ? (
-        <div className="flex justify-center py-12"><Spinner /></div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <SkeletonLoader key={i} variant="card" />
+          ))}
+        </div>
       ) : (
         <div className="space-y-10">
           {(Object.entries(grouped) as [keyof typeof sectionConfig, Scenario[]][]).map(([level, items]) => {

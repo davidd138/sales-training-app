@@ -1,6 +1,7 @@
 import os
 import boto3
 from auth_helpers import check_admin_access
+from audit_helpers import log_admin_action
 from validation import validate_uuid, validate_enum, ValidationError
 
 users_table = boto3.resource("dynamodb").Table(os.environ["USERS_TABLE"])
@@ -45,6 +46,9 @@ def handler(event, context):
         ExpressionAttributeNames=expr_names,
         ExpressionAttributeValues=expr_values,
     )
+
+    admin_id = event.get("identity", {}).get("sub", "unknown")
+    log_admin_action(admin_id, "UPDATE_USER_STATUS", user_id, {"newStatus": status})
 
     # Return updated user
     user["status"] = status

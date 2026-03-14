@@ -321,7 +321,7 @@ class BackendStack(cdk.Stack):
             "analyze_conversation", "Mutation", "analyzeConversation",
             read_tables=["conversations", "scenarios", "guidelines", "users"],
             write_tables=["scores"],
-            extra_env={"BEDROCK_MODEL_ID": "us.anthropic.claude-3-5-sonnet-20241022-v2:0"},
+            extra_env={"BEDROCK_MODEL_ID": "amazon.nova-pro-v1:0"},
             timeout=60,
             memory=512,
         )

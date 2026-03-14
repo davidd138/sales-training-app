@@ -12,8 +12,10 @@ guidelines_table = boto3.resource("dynamodb").Table(os.environ["GUIDELINES_TABLE
 scenarios_table = boto3.resource("dynamodb").Table(os.environ["SCENARIOS_TABLE"])
 bedrock = boto3.client("bedrock-runtime", region_name="us-east-1")
 
-# Use cross-region inference profile for on-demand access
-MODEL_ID = os.environ.get("BEDROCK_MODEL_ID", "us.anthropic.claude-3-5-sonnet-20241022-v2:0")
+# Primary: Claude via cross-region inference profile
+# Fallback: Amazon Nova Pro (no third-party approval needed)
+MODEL_ID = os.environ.get("BEDROCK_MODEL_ID", "amazon.nova-pro-v1:0")
+FALLBACK_MODEL_ID = "amazon.nova-pro-v1:0"
 
 # Category weights for overall score calculation
 CATEGORY_WEIGHTS = {
@@ -59,13 +61,28 @@ def handler(event, context):
 
     prompt = _build_system_prompt(transcript, scenario, guidelines, duration)
 
-    response = bedrock.converse(
-        modelId=MODEL_ID,
-        messages=[{"role": "user", "content": [{"text": prompt}]}],
-        inferenceConfig={"maxTokens": 8192, "temperature": 0.15},
-    )
+    # Try primary model, fallback to Nova Pro if access denied
+    analysis_text = None
+    for model_id in [MODEL_ID, FALLBACK_MODEL_ID]:
+        try:
+            response = bedrock.converse(
+                modelId=model_id,
+                messages=[{"role": "user", "content": [{"text": prompt}]}],
+                inferenceConfig={"maxTokens": 8192, "temperature": 0.15},
+            )
+            analysis_text = response["output"]["message"]["content"][0]["text"]
+            break
+        except Exception as e:
+            error_msg = str(e)
+            if "ResourceNotFoundException" in error_msg or "AccessDeniedException" in error_msg:
+                if model_id != FALLBACK_MODEL_ID:
+                    print(f"Model {model_id} not accessible, falling back to {FALLBACK_MODEL_ID}")
+                    continue
+            raise
 
-    analysis_text = response["output"]["message"]["content"][0]["text"]
+    if not analysis_text:
+        raise Exception("No model available for analysis")
+
     # Strip markdown code fences if present
     if analysis_text.startswith("```"):
         lines = analysis_text.split("\n")

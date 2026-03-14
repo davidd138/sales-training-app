@@ -1,9 +1,7 @@
-import os
 import aws_cdk as cdk
 from constructs import Construct
 from aws_cdk import (
     aws_s3 as s3,
-    aws_s3_deployment as s3_deploy,
     aws_cloudfront as cloudfront,
     aws_cloudfront_origins as origins,
 )
@@ -95,19 +93,16 @@ class FrontendStack(cdk.Stack):
             price_class=cloudfront.PriceClass.PRICE_CLASS_100,
         )
 
-        # ---- Deploy frontend to S3 ----
-        frontend_out_path = os.path.join(
-            os.path.dirname(__file__), "..", "..", "frontend", "out"
-        )
-        s3_deploy.BucketDeployment(
-            self, "DeploySite",
-            sources=[s3_deploy.Source.asset(frontend_out_path)],
-            destination_bucket=site_bucket,
-            distribution=distribution,
-            distribution_paths=["/*"],
-        )
+        # Expose bucket and distribution for pipeline deploy step
+        self.site_bucket = site_bucket
+        self.distribution = distribution
 
         # ---- Outputs ----
+        cdk.CfnOutput(
+            self, "BucketName",
+            value=site_bucket.bucket_name,
+            export_name=f"{env_name}-st-bucket-name",
+        )
         cdk.CfnOutput(
             self, "CloudFrontUrl",
             value=f"https://{distribution.distribution_domain_name}",

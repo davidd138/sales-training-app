@@ -16,26 +16,26 @@ class PipelineStack(cdk.Stack):
             connection_arn=connection_arn,
         )
 
+        synth_step = ShellStep(
+            "Synth",
+            input=source,
+            install_commands=[
+                "pip install -r infrastructure/requirements.txt",
+            ],
+            commands=[
+                "cd infrastructure && npx cdk synth",
+            ],
+            primary_output_directory="infrastructure/cdk.out",
+        )
+
         pipeline = CodePipeline(
             self,
             "Pipeline",
             pipeline_name="sales-training-pipeline",
-            synth=ShellStep(
-                "Synth",
-                input=source,
-                install_commands=[
-                    "pip install -r infrastructure/requirements.txt",
-                    "n 20",
-                    "cd frontend && npm ci && npm run build",
-                ],
-                commands=[
-                    "cd infrastructure && npx cdk synth",
-                ],
-                primary_output_directory="infrastructure/cdk.out",
-            ),
+            synth=synth_step,
         )
 
-        pipeline.add_stage(
+        stage = pipeline.add_stage(
             AppStage(
                 self,
                 "SalesTrainingDev",
@@ -44,5 +44,20 @@ class PipelineStack(cdk.Stack):
                     account="890742600627",
                     region="eu-west-1",
                 ),
+            )
+        )
+
+        # Deploy frontend to S3 after CDK deploy
+        stage.add_post(
+            ShellStep(
+                "DeployFrontend",
+                input=source,
+                commands=[
+                    "n 20",
+                    "cd frontend && npm ci && npm run build",
+                    "aws s3 sync frontend/out/ s3://dev-st-frontend-890742600627/ --delete",
+                    'DIST_ID=$(aws cloudformation describe-stacks --stack-name SalesTrainingDev-FrontendStack --query "Stacks[0].Outputs[?OutputKey==\'DistributionId\'].OutputValue" --output text --region eu-west-1)',
+                    'aws cloudfront create-invalidation --distribution-id "$DIST_ID" --paths "/*" --region eu-west-1',
+                ],
             )
         )

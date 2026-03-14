@@ -1,11 +1,13 @@
 import os
 from datetime import datetime, timezone
 import boto3
+from auth_helpers import check_admin_access
 
 guidelines_table = boto3.resource("dynamodb").Table(os.environ["GUIDELINES_TABLE"])
 
 
 def handler(event, context):
+    check_admin_access(event)
     args = event.get("arguments", {}).get("input", {})
     guideline_id = args["id"]
 

@@ -3,6 +3,7 @@ import json
 import time
 import boto3
 from urllib import request
+from auth_helpers import check_user_access
 
 secrets_client = boto3.client("secretsmanager")
 
@@ -23,6 +24,10 @@ def get_api_key():
 
 
 def handler(event, context):
+    identity = event.get("identity", {})
+    user_id = identity.get("sub", "")
+    check_user_access(user_id)
+
     api_key = get_api_key()
 
     body = json.dumps({

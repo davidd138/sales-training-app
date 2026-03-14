@@ -3,6 +3,7 @@ import uuid
 from datetime import datetime, timezone
 import boto3
 from validation import validate_uuid, ValidationError
+from auth_helpers import check_user_access
 
 conversations_table = boto3.resource("dynamodb").Table(os.environ["CONVERSATIONS_TABLE"])
 scenarios_table = boto3.resource("dynamodb").Table(os.environ["SCENARIOS_TABLE"])
@@ -12,6 +13,9 @@ def handler(event, context):
     identity = event.get("identity", {})
     user_id = identity.get("sub", "")
     email = identity.get("claims", {}).get("email", "")
+
+    check_user_access(user_id)
+
     args = event.get("arguments", {}).get("input", {})
 
     try:

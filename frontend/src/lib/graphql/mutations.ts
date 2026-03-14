@@ -1,6 +1,6 @@
 export const SYNC_USER = /* GraphQL */ `
   mutation SyncUser {
-    syncUser { userId email name role }
+    syncUser { userId email name role status validFrom validUntil groups }
   }
 `;
 
@@ -20,8 +20,30 @@ export const ANALYZE_CONVERSATION = /* GraphQL */ `
   mutation AnalyzeConversation($conversationId: String!) {
     analyzeConversation(conversationId: $conversationId) {
       conversationId overallScore rapport discovery presentation objectionHandling closing
-      strengths improvements detailedFeedback
+      communication strengths improvements detailedFeedback categoryDetails
     }
+  }
+`;
+
+export const CREATE_SCENARIO = /* GraphQL */ `
+  mutation CreateScenario($input: CreateScenarioInput!) {
+    createScenario(input: $input) {
+      id name description clientName clientTitle clientCompany industry difficulty persona voice
+    }
+  }
+`;
+
+export const UPDATE_SCENARIO = /* GraphQL */ `
+  mutation UpdateScenario($input: UpdateScenarioInput!) {
+    updateScenario(input: $input) {
+      id name description clientName clientTitle clientCompany industry difficulty persona voice
+    }
+  }
+`;
+
+export const DELETE_SCENARIO = /* GraphQL */ `
+  mutation DeleteScenario($id: String!) {
+    deleteScenario(id: $id)
   }
 `;
 
@@ -34,5 +56,11 @@ export const CREATE_GUIDELINE = /* GraphQL */ `
 export const UPDATE_GUIDELINE = /* GraphQL */ `
   mutation UpdateGuideline($input: UpdateGuidelineInput!) {
     updateGuideline(input: $input) { id title content isActive }
+  }
+`;
+
+export const UPDATE_USER_STATUS = /* GraphQL */ `
+  mutation UpdateUserStatus($input: UpdateUserStatusInput!) {
+    updateUserStatus(input: $input) { userId email name role status validFrom validUntil }
   }
 `;

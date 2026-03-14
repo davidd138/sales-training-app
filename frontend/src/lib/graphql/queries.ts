@@ -1,7 +1,7 @@
 export const LIST_SCENARIOS = /* GraphQL */ `
   query ListScenarios {
     listScenarios {
-      id name description clientName clientTitle clientCompany industry difficulty persona
+      id name description clientName clientTitle clientCompany industry difficulty persona voice
     }
   }
 `;
@@ -23,7 +23,7 @@ export const GET_CONVERSATION = /* GraphQL */ `
       }
       score {
         conversationId overallScore rapport discovery presentation objectionHandling closing
-        strengths improvements detailedFeedback analyzedAt
+        communication strengths improvements detailedFeedback categoryDetails analyzedAt
       }
     }
   }
@@ -58,5 +58,13 @@ export const GET_GUIDELINES = /* GraphQL */ `
 export const GET_REALTIME_TOKEN = /* GraphQL */ `
   query GetRealtimeToken {
     getRealtimeToken { token expiresAt }
+  }
+`;
+
+export const LIST_ALL_USERS = /* GraphQL */ `
+  query ListAllUsers {
+    listAllUsers {
+      items { userId email name role status validFrom validUntil }
+    }
   }
 `;

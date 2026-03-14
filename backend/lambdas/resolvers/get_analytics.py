@@ -1,5 +1,6 @@
 import os
 import boto3
+from auth_helpers import check_user_access
 
 scores_table = boto3.resource("dynamodb").Table(os.environ["SCORES_TABLE"])
 conversations_table = boto3.resource("dynamodb").Table(os.environ["CONVERSATIONS_TABLE"])
@@ -10,6 +11,7 @@ CATEGORIES = ["rapport", "discovery", "presentation", "objectionHandling", "clos
 def handler(event, context):
     identity = event.get("identity", {})
     user_id = identity.get("sub", "")
+    check_user_access(user_id)
 
     user_scores = scores_table.query(
         IndexName="userId-analyzedAt-index",

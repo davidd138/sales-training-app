@@ -23,16 +23,49 @@ def handler(event, context):
     if not user_id or not email:
         raise Exception(f"Missing user_id ({user_id!r}) or email ({email!r})")
 
-    # Preserve existing role if user already exists
-    existing = users_table.get_item(Key={"userId": user_id}).get("Item")
-    role = existing["role"] if existing else "rep"
-
-    users_table.put_item(
-        Item={
-            "userId": user_id,
-            "email": email.lower(),
-            "name": name,
-            "role": role,
-        }
+    # Get Cognito groups for this user
+    groups_resp = cognito.admin_list_groups_for_user(
+        UserPoolId=USER_POOL_ID,
+        Username=username,
     )
-    return {"userId": user_id, "email": email.lower(), "name": name, "role": role}
+    groups = [g["GroupName"] for g in groups_resp.get("Groups", [])]
+    is_admin = "admins" in groups
+
+    # Preserve existing fields if user already exists
+    existing = users_table.get_item(Key={"userId": user_id}).get("Item")
+
+    if existing:
+        role = "admin" if is_admin else existing.get("role", "rep")
+        status = existing.get("status", "active" if is_admin else "pending")
+        valid_from = existing.get("validFrom")
+        valid_until = existing.get("validUntil")
+    else:
+        role = "admin" if is_admin else "rep"
+        status = "active" if is_admin else "pending"
+        valid_from = None
+        valid_until = None
+
+    item = {
+        "userId": user_id,
+        "email": email.lower(),
+        "name": name,
+        "role": role,
+        "status": status,
+    }
+    if valid_from:
+        item["validFrom"] = valid_from
+    if valid_until:
+        item["validUntil"] = valid_until
+
+    users_table.put_item(Item=item)
+
+    return {
+        "userId": user_id,
+        "email": email.lower(),
+        "name": name,
+        "role": role,
+        "status": status,
+        "validFrom": valid_from,
+        "validUntil": valid_until,
+        "groups": groups,
+    }

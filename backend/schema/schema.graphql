@@ -1,8 +1,19 @@
+enum UserStatus {
+  pending
+  active
+  suspended
+  expired
+}
+
 type User {
   userId: String!
   email: String!
   name: String
   role: String!
+  status: UserStatus!
+  validFrom: String
+  validUntil: String
+  groups: [String!]
 }
 
 type Scenario {
@@ -15,6 +26,7 @@ type Scenario {
   industry: String!
   difficulty: String!
   persona: String!
+  voice: String
   createdBy: String
   createdAt: String
 }
@@ -43,9 +55,11 @@ type Score {
   presentation: Int!
   objectionHandling: Int!
   closing: Int!
+  communication: Int
   strengths: [String!]
   improvements: [String!]
   detailedFeedback: String
+  categoryDetails: String
   analyzedAt: String
 }
 
@@ -111,6 +125,10 @@ type RealtimeToken {
   expiresAt: Int!
 }
 
+type UserList {
+  items: [User!]!
+}
+
 input CreateScenarioInput {
   name: String!
   description: String!
@@ -120,6 +138,20 @@ input CreateScenarioInput {
   industry: String!
   difficulty: String!
   persona: String!
+  voice: String
+}
+
+input UpdateScenarioInput {
+  id: String!
+  name: String
+  description: String
+  clientName: String
+  clientTitle: String
+  clientCompany: String
+  industry: String
+  difficulty: String
+  persona: String
+  voice: String
 }
 
 input CreateConversationInput {
@@ -146,6 +178,13 @@ input CreateGuidelineInput {
   content: String!
 }
 
+input UpdateUserStatusInput {
+  userId: String!
+  status: UserStatus!
+  validFrom: String
+  validUntil: String
+}
+
 type Query {
   listScenarios: [Scenario!]! @aws_cognito_user_pools
   getConversation(id: String!): ConversationWithScore @aws_cognito_user_pools
@@ -154,14 +193,20 @@ type Query {
   getLeaderboard: Leaderboard! @aws_cognito_user_pools
   getGuidelines: [Guideline!]! @aws_cognito_user_pools
   getRealtimeToken: RealtimeToken! @aws_cognito_user_pools
+  # Admin-only queries
+  listAllUsers: UserList! @aws_cognito_user_pools
 }
 
 type Mutation {
   syncUser: User! @aws_cognito_user_pools
   createScenario(input: CreateScenarioInput!): Scenario! @aws_cognito_user_pools
+  updateScenario(input: UpdateScenarioInput!): Scenario! @aws_cognito_user_pools
+  deleteScenario(id: String!): Boolean! @aws_cognito_user_pools
   createConversation(input: CreateConversationInput!): Conversation! @aws_cognito_user_pools
   updateConversation(input: UpdateConversationInput!): Conversation! @aws_cognito_user_pools
   analyzeConversation(conversationId: String!): Score! @aws_cognito_user_pools
   createGuideline(input: CreateGuidelineInput!): Guideline! @aws_cognito_user_pools
   updateGuideline(input: UpdateGuidelineInput!): Guideline! @aws_cognito_user_pools
+  # Admin-only mutations
+  updateUserStatus(input: UpdateUserStatusInput!): User! @aws_cognito_user_pools
 }

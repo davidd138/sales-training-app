@@ -1,8 +1,14 @@
+export type UserStatus = 'pending' | 'active' | 'suspended' | 'expired';
+
 export type User = {
   userId: string;
   email: string;
   name: string | null;
   role: string;
+  status: UserStatus;
+  validFrom?: string | null;
+  validUntil?: string | null;
+  groups?: string[];
 };
 
 export type Scenario = {
@@ -15,6 +21,7 @@ export type Scenario = {
   industry: string;
   difficulty: 'easy' | 'medium' | 'hard';
   persona: string;
+  voice?: string;
 };
 
 export type TranscriptEntry = {
@@ -43,9 +50,11 @@ export type Score = {
   presentation: number;
   objectionHandling: number;
   closing: number;
+  communication?: number;
   strengths: string[];
   improvements: string[];
   detailedFeedback: string;
+  categoryDetails?: string;
   analyzedAt: string;
 };
 

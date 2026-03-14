@@ -2,11 +2,14 @@ import os
 import uuid
 from datetime import datetime, timezone
 import boto3
+from auth_helpers import check_admin_access
 
 scenarios_table = boto3.resource("dynamodb").Table(os.environ["SCENARIOS_TABLE"])
 
 
 def handler(event, context):
+    check_admin_access(event)
+
     identity = event.get("identity", {})
     user_id = identity.get("sub", "")
     args = event.get("arguments", {}).get("input", {})
@@ -21,6 +24,7 @@ def handler(event, context):
         "industry": args["industry"],
         "difficulty": args["difficulty"],
         "persona": args["persona"],
+        "voice": args.get("voice", "coral"),
         "createdBy": user_id,
         "createdAt": datetime.now(timezone.utc).isoformat(),
     }

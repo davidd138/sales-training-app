@@ -3,19 +3,21 @@ import json
 import boto3
 from datetime import datetime, timezone
 from validation import validate_uuid, ValidationError
+from auth_helpers import check_user_access
 
 conversations_table = boto3.resource("dynamodb").Table(os.environ["CONVERSATIONS_TABLE"])
 scores_table = boto3.resource("dynamodb").Table(os.environ["SCORES_TABLE"])
 guidelines_table = boto3.resource("dynamodb").Table(os.environ["GUIDELINES_TABLE"])
 scenarios_table = boto3.resource("dynamodb").Table(os.environ["SCENARIOS_TABLE"])
-bedrock = boto3.client("bedrock-runtime")
+bedrock = boto3.client("bedrock-runtime", region_name="us-east-1")
 
-MODEL_ID = "eu.anthropic.claude-sonnet-4-20250514-v1:0"
+MODEL_ID = os.environ.get("BEDROCK_MODEL_ID", "amazon.nova-micro-v1:0")
 
 
 def handler(event, context):
     identity = event.get("identity", {})
     user_id = identity.get("sub", "")
+    check_user_access(user_id)
     try:
         conv_id = validate_uuid(event.get("arguments", {}).get("conversationId", ""), "conversationId")
     except ValidationError as e:
@@ -41,19 +43,18 @@ def handler(event, context):
 
     prompt = build_analysis_prompt(transcript, scenario, guidelines)
 
-    response = bedrock.invoke_model(
+    response = bedrock.converse(
         modelId=MODEL_ID,
-        contentType="application/json",
-        accept="application/json",
-        body=json.dumps({
-            "anthropic_version": "bedrock-2023-05-31",
-            "max_tokens": 4096,
-            "messages": [{"role": "user", "content": prompt}],
-        }),
+        messages=[{"role": "user", "content": [{"text": prompt}]}],
+        inferenceConfig={"maxTokens": 4096, "temperature": 0.3},
     )
 
-    result = json.loads(response["body"].read())
-    analysis_text = result["content"][0]["text"]
+    analysis_text = response["output"]["message"]["content"][0]["text"]
+    # Strip markdown code fences if present
+    if analysis_text.startswith("```"):
+        lines = analysis_text.split("\n")
+        lines = [l for l in lines if not l.startswith("```")]
+        analysis_text = "\n".join(lines)
     analysis = json.loads(analysis_text)
 
     cats = analysis["categories"]

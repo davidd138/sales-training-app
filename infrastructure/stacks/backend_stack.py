@@ -244,46 +244,70 @@ class BackendStack(cdk.Stack):
             )
             return fn
 
+        # ---- Cognito IAM policy (shared by resolvers that need group checks) ----
+        cognito_policy = iam.PolicyStatement(
+            actions=[
+                "cognito-idp:AdminGetUser",
+                "cognito-idp:AdminListGroupsForUser",
+            ],
+            resources=[user_pool.user_pool_arn],
+        )
+
         # ---- Resolvers with least-privilege permissions ----
+
+        # syncUser needs Cognito access + users table write
         sync_user_fn = create_resolver(
             "sync_user", "Mutation", "syncUser",
             write_tables=["users"],
             extra_env={"USER_POOL_ID": user_pool.user_pool_id},
         )
-        sync_user_fn.add_to_role_policy(
-            iam.PolicyStatement(
-                actions=["cognito-idp:AdminGetUser"],
-                resources=[user_pool.user_pool_arn],
-            )
+        sync_user_fn.add_to_role_policy(cognito_policy)
+
+        # User-facing resolvers (all need users table read for access checks)
+        list_scenarios_fn = create_resolver(
+            "list_scenarios", "Query", "listScenarios",
+            read_tables=["scenarios", "users"],
         )
 
-        create_resolver("list_scenarios", "Query", "listScenarios", read_tables=["scenarios"])
-        create_resolver("create_scenario", "Mutation", "createScenario", write_tables=["scenarios"])
-        create_resolver(
+        create_conversation_fn = create_resolver(
             "create_conversation", "Mutation", "createConversation",
-            read_tables=["scenarios"], write_tables=["conversations"],
+            read_tables=["scenarios", "users"], write_tables=["conversations"],
         )
-        create_resolver("update_conversation", "Mutation", "updateConversation", write_tables=["conversations"])
-        create_resolver(
+
+        update_conversation_fn = create_resolver(
+            "update_conversation", "Mutation", "updateConversation",
+            read_tables=["users"], write_tables=["conversations"],
+        )
+
+        get_conversation_fn = create_resolver(
             "get_conversation", "Query", "getConversation",
-            read_tables=["conversations", "scores"],
+            read_tables=["conversations", "scores", "users"],
         )
-        create_resolver("list_conversations", "Query", "listConversations", read_tables=["conversations"])
-        create_resolver("get_guidelines", "Query", "getGuidelines", read_tables=["guidelines"])
-        create_resolver("create_guideline", "Mutation", "createGuideline", write_tables=["guidelines"])
-        create_resolver("update_guideline", "Mutation", "updateGuideline", write_tables=["guidelines"])
-        create_resolver(
+
+        list_conversations_fn = create_resolver(
+            "list_conversations", "Query", "listConversations",
+            read_tables=["conversations", "users"],
+        )
+
+        get_guidelines_fn = create_resolver(
+            "get_guidelines", "Query", "getGuidelines",
+            read_tables=["guidelines", "users"],
+        )
+
+        get_analytics_fn = create_resolver(
             "get_analytics", "Query", "getAnalytics",
-            read_tables=["scores", "conversations"],
+            read_tables=["scores", "conversations", "users"],
         )
-        create_resolver(
+
+        get_leaderboard_fn = create_resolver(
             "get_leaderboard", "Query", "getLeaderboard",
             read_tables=["scores", "users"],
         )
 
-        # Realtime token Lambda (Secrets Manager only, no table access)
+        # Realtime token Lambda (Secrets Manager + access check)
         token_fn = create_resolver(
             "get_realtime_token", "Query", "getRealtimeToken",
+            read_tables=["users"],
             extra_env={"OPENAI_SECRET_NAME": openai_secret.secret_name},
             timeout=10,
         )
@@ -292,20 +316,72 @@ class BackendStack(cdk.Stack):
         # Analyze conversation Lambda (Bedrock + multiple tables)
         analyze_fn = create_resolver(
             "analyze_conversation", "Mutation", "analyzeConversation",
-            read_tables=["conversations", "scenarios", "guidelines"],
+            read_tables=["conversations", "scenarios", "guidelines", "users"],
             write_tables=["scores"],
             timeout=60,
             memory=512,
         )
         analyze_fn.add_to_role_policy(
             iam.PolicyStatement(
-                actions=["bedrock:InvokeModel"],
+                actions=["bedrock:InvokeModel", "bedrock:Converse"],
                 resources=[
-                    f"arn:aws:bedrock:{self.region}::foundation-model/anthropic.claude-sonnet-4-20250514-v1:0",
-                    f"arn:aws:bedrock:*:{self.account}:inference-profile/eu.anthropic.claude-sonnet-4-20250514-v1:0",
+                    "arn:aws:bedrock:*::foundation-model/anthropic.claude-*",
+                    "arn:aws:bedrock:*::foundation-model/amazon.nova-*",
+                    f"arn:aws:bedrock:*:{self.account}:inference-profile/eu.anthropic.*",
                 ],
             )
         )
+
+        # ---- Admin-only resolvers ----
+
+        # createScenario (admin-only)
+        create_scenario_fn = create_resolver(
+            "create_scenario", "Mutation", "createScenario",
+            read_tables=["users"], write_tables=["scenarios"],
+        )
+        create_scenario_fn.add_to_role_policy(cognito_policy)
+
+        # updateScenario (admin-only)
+        update_scenario_fn = create_resolver(
+            "update_scenario", "Mutation", "updateScenario",
+            read_tables=["users"], write_tables=["scenarios"],
+        )
+        update_scenario_fn.add_to_role_policy(cognito_policy)
+
+        # deleteScenario (admin-only)
+        delete_scenario_fn = create_resolver(
+            "delete_scenario", "Mutation", "deleteScenario",
+            read_tables=["users"], write_tables=["scenarios"],
+        )
+        delete_scenario_fn.add_to_role_policy(cognito_policy)
+
+        # createGuideline (admin-only)
+        create_guideline_fn = create_resolver(
+            "create_guideline", "Mutation", "createGuideline",
+            read_tables=["users"], write_tables=["guidelines"],
+        )
+        create_guideline_fn.add_to_role_policy(cognito_policy)
+
+        # updateGuideline (admin-only)
+        update_guideline_fn = create_resolver(
+            "update_guideline", "Mutation", "updateGuideline",
+            read_tables=["users"], write_tables=["guidelines"],
+        )
+        update_guideline_fn.add_to_role_policy(cognito_policy)
+
+        # listAllUsers (admin-only)
+        list_all_users_fn = create_resolver(
+            "list_all_users", "Query", "listAllUsers",
+            read_tables=["users"],
+        )
+        list_all_users_fn.add_to_role_policy(cognito_policy)
+
+        # updateUserStatus (admin-only)
+        update_user_status_fn = create_resolver(
+            "update_user_status", "Mutation", "updateUserStatus",
+            read_tables=["users"], write_tables=["users"],
+        )
+        update_user_status_fn.add_to_role_policy(cognito_policy)
 
         # ---- Exports ----
         self.graphql_url = api.graphql_url

@@ -4,6 +4,7 @@ from validation import (
     validate_uuid, validate_enum, validate_positive_int,
     validate_transcript, ValidationError,
 )
+from auth_helpers import check_user_access
 
 conversations_table = boto3.resource("dynamodb").Table(os.environ["CONVERSATIONS_TABLE"])
 
@@ -11,6 +12,7 @@ conversations_table = boto3.resource("dynamodb").Table(os.environ["CONVERSATIONS
 def handler(event, context):
     identity = event.get("identity", {})
     user_id = identity.get("sub", "")
+    check_user_access(user_id)
     args = event.get("arguments", {}).get("input", {})
 
     try:

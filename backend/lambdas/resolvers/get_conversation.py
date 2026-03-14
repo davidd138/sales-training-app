@@ -1,5 +1,6 @@
 import os
 import boto3
+from auth_helpers import check_user_access
 
 conversations_table = boto3.resource("dynamodb").Table(os.environ["CONVERSATIONS_TABLE"])
 scores_table = boto3.resource("dynamodb").Table(os.environ["SCORES_TABLE"])
@@ -8,6 +9,7 @@ scores_table = boto3.resource("dynamodb").Table(os.environ["SCORES_TABLE"])
 def handler(event, context):
     identity = event.get("identity", {})
     user_id = identity.get("sub", "")
+    check_user_access(user_id)
     conv_id = event.get("arguments", {}).get("id", "")
 
     conv = conversations_table.get_item(Key={"id": conv_id}).get("Item")

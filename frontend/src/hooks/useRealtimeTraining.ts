@@ -185,7 +185,7 @@ export function useRealtimeTraining(scenario: Scenario) {
           session: {
             modalities: ['audio', 'text'],
             instructions: buildSystemPrompt(),
-            voice: 'coral',
+            voice: (scenario as any).voice || 'coral',
             input_audio_format: 'pcm16',
             output_audio_format: 'pcm16',
             input_audio_transcription: { model: 'gpt-4o-mini-transcribe' },

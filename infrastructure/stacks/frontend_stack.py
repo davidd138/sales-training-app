@@ -59,9 +59,24 @@ class FrontendStack(cdk.Stack):
             ),
         )
 
+        # ---- CloudFront Function: rewrite /path → /path/index.html ----
+        url_rewrite_fn = cloudfront.Function(
+            self, "UrlRewriteFn",
+            code=cloudfront.FunctionCode.from_inline(
+                "function handler(event) {\n"
+                "  var request = event.request;\n"
+                "  var uri = request.uri;\n"
+                "  if (uri.endsWith('/')) {\n"
+                "    request.uri += 'index.html';\n"
+                "  } else if (!uri.includes('.')) {\n"
+                "    request.uri += '/index.html';\n"
+                "  }\n"
+                "  return request;\n"
+                "}\n"
+            ),
+        )
+
         # ---- CloudFront Distribution ----
-        # URL rewriting handled by error_responses (403/404 → /index.html)
-        # which works for Next.js static export SPA routing
         distribution = cloudfront.Distribution(
             self, "Distribution",
             default_behavior=cloudfront.BehaviorOptions(
@@ -69,6 +84,12 @@ class FrontendStack(cdk.Stack):
                 viewer_protocol_policy=cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
                 response_headers_policy=response_headers_policy,
                 cache_policy=cloudfront.CachePolicy.CACHING_DISABLED,
+                function_associations=[
+                    cloudfront.FunctionAssociation(
+                        function=url_rewrite_fn,
+                        event_type=cloudfront.FunctionEventType.VIEWER_REQUEST,
+                    ),
+                ],
             ),
             additional_behaviors={
                 "/_next/static/*": cloudfront.BehaviorOptions(

@@ -190,6 +190,22 @@ export default function RegisterPage() {
             <Input label="Email corporativo" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="tu@empresa.com" required autoComplete="email" />
             <Input label="Contrasena" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Min. 12 caracteres" required minLength={12} autoComplete="new-password" />
             <p className="text-xs text-slate-500">Debe incluir mayusculas, minusculas, numeros y simbolos</p>
+            <div className="flex items-start gap-2">
+              <input
+                type="checkbox"
+                id="consent"
+                required
+                className="w-4 h-4 mt-0.5 rounded border-slate-600 bg-slate-700 text-blue-500 focus:ring-blue-500/30"
+              />
+              <label htmlFor="consent" className="text-xs text-slate-400 leading-tight">
+                He leido y acepto la{' '}
+                <a href="/privacy" target="_blank" className="text-blue-400 hover:underline">Politica de Privacidad</a>
+                {' '}y los{' '}
+                <a href="/terms" target="_blank" className="text-blue-400 hover:underline">Terminos y Condiciones</a>
+                . Consiento el tratamiento de mis datos personales, incluyendo grabaciones de voz,
+                para la prestacion del servicio de entrenamiento comercial con IA.
+              </label>
+            </div>
             {error && (
               <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
                 <p className="text-red-400 text-sm">{error}</p>

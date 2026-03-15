@@ -217,6 +217,7 @@ class TestE2EFrontendPages:
         "login", "register", "dashboard", "scenarios", "training",
         "analysis", "history", "analytics", "guidelines",
         "admin/users", "admin/scenarios", "admin/guidelines", "admin/analytics",
+        "privacy", "terms", "cookies",
     ]
 
     @pytest.mark.parametrize("page", PAGES)

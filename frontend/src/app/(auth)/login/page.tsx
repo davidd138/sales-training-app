@@ -195,6 +195,13 @@ export default function LoginPage() {
             <p className="text-xs text-slate-500">
               Plataforma de entrenamiento profesional para equipos comerciales
             </p>
+            <p className="text-xs text-slate-600 mt-2">
+              <a href="/privacy" className="hover:text-slate-400 transition-colors">Privacidad</a>
+              {' · '}
+              <a href="/terms" className="hover:text-slate-400 transition-colors">Terminos</a>
+              {' · '}
+              <a href="/cookies" className="hover:text-slate-400 transition-colors">Cookies</a>
+            </p>
           </div>
         </div>
       </div>

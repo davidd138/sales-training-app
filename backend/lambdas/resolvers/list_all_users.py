@@ -16,12 +16,20 @@ def handler(event, context):
         response = users_table.scan(ExclusiveStartKey=response["LastEvaluatedKey"])
         items.extend(response.get("Items", []))
 
-    # Ensure all required fields have defaults
+    # Ensure all required fields have defaults and filter out invalid items
+    valid_items = []
     for item in items:
+        item.setdefault("email", item.get("userId", "unknown"))
+        item.setdefault("name", item.get("email", "").split("@")[0])
+        item.setdefault("role", "rep")
         item.setdefault("status", "pending")
         item.setdefault("validFrom", None)
         item.setdefault("validUntil", None)
         item.setdefault("groups", [])
+        # Only include items that have a userId
+        if item.get("userId"):
+            valid_items.append(item)
+    items = valid_items
 
     # Sort: pending first, then by email
     status_order = {"pending": 0, "active": 1, "suspended": 2, "expired": 3}

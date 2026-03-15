@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useCallback } from 'react';
+import { useEffect, useMemo, useCallback, useState } from 'react';
 import Link from 'next/link';
 import { AdminGuard } from '@/components/layout/AdminGuard';
 import { useQuery } from '@/hooks/useGraphQL';
@@ -51,6 +51,8 @@ function AnalyticsContent() {
     URL.revokeObjectURL(url);
   }, [leaderboard]);
 
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+
   const entries = leaderboard?.entries || [];
   const users = (usersData as any)?.items || [];
   const activeUsers = users.filter((u: User) => u.status === 'active' && u.role !== 'admin').length;
@@ -98,8 +100,75 @@ function AnalyticsContent() {
     return Math.max(...entries.map(e => e.avgScore), 1);
   }, [entries]);
 
+  const selectedUser = useMemo(() => {
+    if (!selectedUserId) return null;
+    return entries.find((e: LeaderboardEntry) => e.userId === selectedUserId) || null;
+  }, [selectedUserId, entries]);
+
   return (
     <div className="animate-fade-in">
+      {/* Panel de Detalle de Usuario */}
+      {selectedUser && (
+        <div className="mb-6 animate-fade-in">
+          <Card className="!p-0 overflow-hidden border border-amber-500/30">
+            <div className="px-5 py-3 border-b border-slate-700/50 bg-gradient-to-r from-amber-500/10 to-orange-500/10 flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+                <svg className="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                </svg>
+                Detalle del Usuario
+              </h2>
+              <button
+                onClick={() => setSelectedUserId(null)}
+                className="text-slate-400 hover:text-white transition-colors p-1 rounded-md hover:bg-slate-700/50"
+                aria-label="Cerrar detalle"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-5">
+              <div className="flex items-center gap-4 mb-4">
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold shrink-0 ${
+                  selectedUser.avgScore >= 80
+                    ? 'bg-gradient-to-br from-emerald-500 to-green-400 text-white'
+                    : selectedUser.avgScore >= 60
+                    ? 'bg-gradient-to-br from-amber-500 to-orange-400 text-white'
+                    : 'bg-gradient-to-br from-red-500 to-rose-400 text-white'
+                }`}>
+                  {(selectedUser.name || selectedUser.email || '?')[0].toUpperCase()}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-lg font-bold text-white truncate">{selectedUser.name || '-'}</p>
+                  <p className="text-sm text-slate-400 truncate">{selectedUser.email}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
+                <div className="bg-slate-700/30 rounded-lg p-4 text-center">
+                  <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Puntuacion Media</p>
+                  <p className={`text-3xl font-bold ${
+                    selectedUser.avgScore >= 80
+                      ? 'text-emerald-400'
+                      : selectedUser.avgScore >= 60
+                      ? 'text-amber-400'
+                      : 'text-red-400'
+                  }`}>
+                    {selectedUser.avgScore}
+                  </p>
+                  <p className="text-xs text-slate-500 mt-1">de 100 puntos</p>
+                </div>
+                <div className="bg-slate-700/30 rounded-lg p-4 text-center">
+                  <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Total Sesiones</p>
+                  <p className="text-3xl font-bold text-blue-400">{selectedUser.totalSessions}</p>
+                  <p className="text-xs text-slate-500 mt-1">sesiones completadas</p>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
+
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm mb-6">
         <Link href="/admin" className="text-slate-400 hover:text-amber-400 transition-colors">
@@ -353,7 +422,12 @@ function AnalyticsContent() {
                             {(e.name || e.email || '?')[0].toUpperCase()}
                           </div>
                           <div className="min-w-0">
-                            <p className="text-sm font-medium text-white truncate">{e.name || '-'}</p>
+                            <button
+                              onClick={() => setSelectedUserId(selectedUserId === e.userId ? null : e.userId)}
+                              className="text-sm font-medium text-white truncate hover:text-amber-400 transition-colors cursor-pointer text-left"
+                            >
+                              {e.name || '-'}
+                            </button>
                             <p className="text-xs text-slate-400 truncate">{e.email}</p>
                           </div>
                         </div>
@@ -428,7 +502,12 @@ function AnalyticsContent() {
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-white truncate">{e.name || '-'}</p>
+                  <button
+                    onClick={() => setSelectedUserId(selectedUserId === e.userId ? null : e.userId)}
+                    className="text-sm font-semibold text-white truncate hover:text-amber-400 transition-colors cursor-pointer text-left"
+                  >
+                    {e.name || '-'}
+                  </button>
                   <p className="text-xs text-slate-400 truncate">{e.email}</p>
                 </div>
               </div>

@@ -517,6 +517,65 @@ export default function AnalysisPage() {
         </div>
       )}
 
+      {/* Recommended next step */}
+      {displayScore && (
+        <div className="glass rounded-2xl p-5 sm:p-6 animate-slide-up">
+          <h3 className="text-white font-semibold mb-3 flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center">
+              <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+              </svg>
+            </div>
+            Siguiente paso recomendado
+          </h3>
+          {s.overallScore >= 70 ? (
+            <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-xl p-4">
+              <p className="text-emerald-400 text-sm font-medium mb-1">Excelente trabajo! Sube de nivel</p>
+              <p className="text-slate-300 text-sm">Tu puntuacion de {Math.round(s.overallScore)} demuestra que dominas este nivel. Prueba un escenario de mayor dificultad para seguir mejorando.</p>
+            </div>
+          ) : s.overallScore >= 50 ? (
+            <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-4">
+              <p className="text-blue-400 text-sm font-medium mb-1">Buen progreso. Practica con otro escenario</p>
+              <p className="text-slate-300 text-sm">Tu puntuacion de {Math.round(s.overallScore)} muestra que vas por buen camino. Prueba un escenario diferente del mismo nivel para consolidar tus habilidades.</p>
+            </div>
+          ) : (
+            <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-4">
+              <p className="text-amber-400 text-sm font-medium mb-1">Hay margen de mejora. Vuelve a intentarlo</p>
+              <p className="text-slate-300 text-sm">Tu puntuacion de {Math.round(s.overallScore)} indica areas de mejora. Revisa el feedback del coach y vuelve a practicar con este mismo escenario para mejorar tu tecnica.</p>
+            </div>
+          )}
+          {/* Weakest area tip */}
+          {(() => {
+            const categories = [
+              { key: 'rapport', label: 'Rapport', tip: 'Practica la escucha activa y busca puntos en comun con el cliente.' },
+              { key: 'discovery', label: 'Descubrimiento', tip: 'Usa mas preguntas de Implicacion y Necesidad-Beneficio (SPIN).' },
+              { key: 'presentation', label: 'Presentacion', tip: 'Conecta cada beneficio con una necesidad especifica del cliente.' },
+              { key: 'objectionHandling', label: 'Objeciones', tip: 'Valida la preocupacion antes de responder. Usa la tecnica Feel-Felt-Found.' },
+              { key: 'closing', label: 'Cierre', tip: 'Propone siempre un siguiente paso concreto con fecha y hora.' },
+              { key: 'communication', label: 'Comunicacion', tip: 'Habla menos y escucha mas. Objetivo: 30% tu, 70% cliente.' },
+            ];
+            const weakest = categories.reduce((min, cat) => {
+              const score = (s[cat.key as keyof Score] as number) || 100;
+              const minScore = (s[min.key as keyof Score] as number) || 100;
+              return score < minScore ? cat : min;
+            });
+            const weakScore = (s[weakest.key as keyof Score] as number) || 0;
+            if (weakScore < 70) {
+              return (
+                <div className="mt-3 flex items-start gap-2 text-sm">
+                  <span className="text-amber-400 mt-0.5">💡</span>
+                  <p className="text-slate-400">
+                    <span className="text-slate-300 font-medium">Area a trabajar: {weakest.label} ({Math.round(weakScore)}).</span>{' '}
+                    {weakest.tip}
+                  </p>
+                </div>
+              );
+            }
+            return null;
+          })()}
+        </div>
+      )}
+
       {/* Action buttons */}
       <div className="flex flex-col sm:flex-row justify-center gap-3 pb-6 animate-slide-up">
         <Button onClick={() => router.push('/scenarios')}>

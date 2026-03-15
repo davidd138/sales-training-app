@@ -15,6 +15,7 @@ class PipelineStack(cdk.Stack):
             "davidd138/sales-training-app",
             "main",
             connection_arn=connection_arn,
+            trigger_on_push=True,
         )
 
         synth_step = ShellStep(

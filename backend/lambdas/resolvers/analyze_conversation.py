@@ -237,7 +237,23 @@ propio dolor.
 - **Champion**: Intenta crear un aliado interno en la organizacion del cliente?
 
 No todos los elementos de MEDDIC aplican en una primera llamada, pero los mejores \
-comerciales empiezan a cualificar desde el minuto uno."""
+comerciales empiezan a cualificar desde el minuto uno.
+
+## Gap Selling (Keenan)
+El modelo Gap Selling se centra en la distancia entre el Estado Actual y el Estado Futuro \
+deseado del cliente. El "gap" es lo que justifica la compra.
+- **Estado Actual**: Donde esta el cliente hoy? Cual es su realidad operativa, sus \
+problemas, sus limitaciones? El comercial debe explorar esto en profundidad.
+- **Estado Futuro**: Donde quiere estar el cliente? Que resultados busca? Como seria su \
+situacion ideal?
+- **El Gap**: La diferencia entre ambos estados. El comercial excelente ayuda al cliente \
+a VER y SENTIR esa distancia. "Hoy estais pagando X y podriais estar pagando Y — esa \
+diferencia de Z al mes es lo que os esta costando no actuar."
+- **Cuantificacion del Gap**: Los mejores comerciales ponen NUMEROS al gap. "Eso os esta \
+costando X al mes", "Estais dejando de ganar Y al ano". Cuantificar transforma un problema \
+abstracto en una urgencia concreta.
+- Un comercial que domina Gap Selling no necesita crear urgencia artificial — el propio \
+gap genera la urgencia."""
 
 
 def _section_scoring_rubric():
@@ -272,7 +288,16 @@ gestiono las senales de resistencia o escepticismo. Si no hubo ninguna, puntua 5
 - Si la conversacion es muy corta (menos de 6 turnos), penaliza proporcionalmente \
 todas las categorias y explicalo.
 - Las puntuaciones de subcriteria deben ser coherentes con la puntuacion global de \
-la categoria."""
+la categoria.
+
+BONIFICACIONES POR TECNICAS AVANZADAS:
+- Si el comercial CUANTIFICA el impacto del problema con numeros concretos (por ejemplo, \
+"eso os esta costando X al mes", "estais dejando de facturar Y al ano"), suma 10 puntos \
+de bonificacion a discovery (sin superar 100). Cuantificar el gap es una de las tecnicas \
+mas poderosas en ventas.
+- Si el comercial usa REVERSIONES (tecnica Sandler: responder preguntas con preguntas \
+para mantener el control y profundizar), suma 5 puntos de bonificacion a objectionHandling \
+(sin superar 100). Las reversiones demuestran dominio avanzado de la conversacion."""
 
 
 def _section_categories():
@@ -320,6 +345,10 @@ seguimiento basadas en lo que acaba de escuchar? Resume para confirmar entendimi
 O simplemente espera su turno para hablar?
 - **profundidad** (0-100): Va mas alla de la primera respuesta? Cuando el cliente dice \
 algo interesante, profundiza? O pasa a la siguiente pregunta de su lista mental?
+- **gapIdentification** (0-100): Ayudo el comercial al cliente a ver el GAP entre su \
+estado actual y su estado futuro deseado? Hizo preguntas sobre donde esta hoy y donde \
+quiere estar? Cuantifico la diferencia? Un comercial excelente hace que el cliente \
+SIENTA la distancia entre ambos estados.
 
 Indicadores positivos: Progresion natural S-P-I-N, preguntas que nacen de las respuestas \
 del cliente, silencios que dejan espacio al cliente, resumen de lo escuchado.
@@ -364,6 +393,11 @@ defensiva.
 resolver la objecion? No basta con decir "no te preocupes".
 - **verificacion** (0-100): Confirma que la objecion esta resuelta? "Con esto que te \
 comento, te queda mas claro?" — no dejar objeciones en el aire.
+- **sandlerReversal** (0-100): Utiliza reversiones (tecnica Sandler) para mantener el \
+control? Es decir, responde a preguntas del cliente con preguntas? "Me preguntas por \
+el precio... antes de hablar de numeros, ayudame a entender: que presupuesto teneis \
+asignado?" Las reversiones mantienen al comercial en posicion de control y profundizan \
+en la necesidad real detras de la pregunta.
 
 Indicadores positivos: Tecnica "Feel-Felt-Found", reencuadre con datos, preguntas para \
 entender la objecion de fondo, verificacion de resolucion.
@@ -384,6 +418,12 @@ hora? "Puedo enviaros una propuesta el jueves y lo revisamos juntos el viernes a
 actuales estan vigentes hasta..." vs "si no firmas hoy se acaba la oferta".
 - **resumenAcuerdos** (0-100): Recapitula lo hablado, los acuerdos y los proximos \
 pasos antes de colgar? El resumen final cierra el ciclo.
+- **upfrontContract** (0-100): Establecio un "contrato previo" (tecnica Sandler) al \
+inicio de la conversacion? Es decir, definio agenda, tiempo disponible y posibles \
+resultados de la llamada? "Te propongo que en los proximos 15 minutos veamos vuestra \
+situacion actual, os cuente como podemos ayudaros, y si tiene sentido, cerramos una \
+siguiente reunion. Si no encaja, sin problema. Te parece?" Esto demuestra profesionalidad \
+y reduce la resistencia del cliente.
 
 Indicadores positivos: Cierres tentativa durante la conversacion, siguiente paso con \
 fecha/hora, resumen final, tono de colaboracion.
@@ -565,6 +605,11 @@ o C (cerrada/si-no).
 - El comercial demuestra algun elemento Challenger (insight, ensenar algo nuevo)?
 - Se establece algun tipo de contrato previo (Sandler)?
 - Hay intentos de cualificacion MEDDIC?
+- Identifico el comercial el GAP entre el estado actual y el estado futuro deseado del \
+cliente? Ayudo al cliente a ver y sentir esa distancia?
+- Cuantas veces cuantifico el comercial un problema o beneficio con numeros concretos? \
+(por ejemplo, euros, porcentajes, horas, plazos). Cada cuantificacion es una senal de \
+sofisticacion comercial.
 
 ## PASO 2: PUNTUACION CON EVIDENCIA
 Para CADA categoria:
@@ -611,6 +656,7 @@ def _section_output_format():
                     "preguntasNecesidadBeneficio": 10,
                     "escuchaActiva": 50,
                     "profundidad": 40,
+                    "gapIdentification": 25,
                 },
             },
             "presentation": {
@@ -635,6 +681,7 @@ def _section_output_format():
                     "reencuadre": 50,
                     "evidenciaResolucion": 45,
                     "verificacion": 30,
+                    "sandlerReversal": 40,
                 },
             },
             "closing": {
@@ -646,6 +693,7 @@ def _section_output_format():
                     "compromisoConcreto": 55,
                     "urgenciaNatural": 35,
                     "resumenAcuerdos": 50,
+                    "upfrontContract": 30,
                 },
             },
             "communication": {

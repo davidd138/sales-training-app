@@ -232,6 +232,38 @@ export default function TrainingPage() {
             </ul>
           </div>
 
+          {/* Learning objectives */}
+          {persona.learningObjectives && (
+            <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-5 mb-6">
+              <h2 className="text-sm font-semibold text-blue-400 uppercase tracking-wider mb-2">Objetivos de aprendizaje</h2>
+              <p className="text-sm text-slate-300">{persona.learningObjectives}</p>
+            </div>
+          )}
+
+          {/* Pre-call checklist */}
+          <div className="bg-slate-800/50 rounded-xl border border-slate-700/50 p-5 mb-8">
+            <h2 className="text-sm font-semibold text-blue-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Checklist pre-llamada
+            </h2>
+            <div className="space-y-2">
+              {[
+                'He leido el perfil del cliente y su situacion',
+                'Tengo claro mi objetivo para esta llamada',
+                'He preparado 3 preguntas de descubrimiento (SPIN)',
+                scenario.difficulty !== 'easy' ? 'He pensado en como manejar las posibles objeciones' : null,
+                scenario.difficulty === 'hard' ? 'Tengo un hook de 15 segundos para captar atencion' : null,
+              ].filter(Boolean).map((item, i) => (
+                <label key={i} className="flex items-center gap-2.5 text-sm text-slate-300 cursor-pointer group">
+                  <input type="checkbox" className="w-4 h-4 rounded border-slate-600 bg-slate-700 text-blue-500 focus:ring-blue-500/30" />
+                  <span className="group-hover:text-white transition-colors">{item}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
           <div className="flex justify-center">
             <Button
               onClick={startCall}

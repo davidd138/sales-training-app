@@ -146,6 +146,23 @@ export default function RegisterPage() {
           ))}
         </div>
 
+        {/* FAQ */}
+        <div className="relative z-10 mt-8 hidden lg:block">
+          <h3 className="text-white font-semibold mb-3">Preguntas frecuentes</h3>
+          <div className="space-y-2">
+            {[
+              { q: 'Es gratis?', a: 'Tu acceso es gestionado por tu profesor o empresa.' },
+              { q: 'Necesito microfono?', a: 'Si, las sesiones son conversaciones de voz reales.' },
+              { q: 'En que idioma son las sesiones?', a: 'Todas las sesiones y analisis son en espanol.' },
+            ].map((faq, i) => (
+              <div key={i} className="bg-slate-700/20 rounded-lg p-3 border border-slate-700/30">
+                <p className="text-white text-sm font-medium">{faq.q}</p>
+                <p className="text-slate-400 text-xs mt-0.5">{faq.a}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Trusted by */}
         <div className="relative z-10 mt-8 lg:mt-0 hidden lg:block">
           <p className="text-slate-500 text-xs uppercase tracking-wider mb-3">Empresas que confian en nosotros</p>

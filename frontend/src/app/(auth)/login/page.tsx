@@ -20,9 +20,10 @@ const TESTIMONIALS = [
 ];
 
 const STATS = [
-  { value: '8+', label: 'Escenarios' },
-  { value: '6', label: 'Categorias de analisis' },
+  { value: '12', label: 'Escenarios' },
+  { value: '6', label: 'Categorias SPIN' },
   { value: '24/7', label: 'Disponible' },
+  { value: '5min', label: 'Para empezar' },
 ];
 
 export default function LoginPage() {
@@ -112,6 +113,24 @@ export default function LoginPage() {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* How it works */}
+        <div className="relative z-10 mt-8 hidden lg:block">
+          <h3 className="text-white font-semibold mb-4">Como funciona</h3>
+          <div className="flex gap-4">
+            {[
+              { step: '1', title: 'Elige', desc: 'Selecciona un escenario y dificultad' },
+              { step: '2', title: 'Practica', desc: 'Llama al cliente IA por voz' },
+              { step: '3', title: 'Mejora', desc: 'Recibe feedback de tu coach IA' },
+            ].map(s => (
+              <div key={s.step} className="flex-1 bg-slate-700/20 rounded-xl p-3 border border-slate-700/30">
+                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white text-xs font-bold mb-2">{s.step}</div>
+                <p className="text-white text-sm font-medium">{s.title}</p>
+                <p className="text-slate-400 text-xs">{s.desc}</p>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Testimonials */}

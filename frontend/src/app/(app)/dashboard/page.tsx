@@ -289,6 +289,47 @@ export default function DashboardPage() {
         </Card>
       )}
 
+      {/* Skill profile */}
+      {a && a.totalSessions > 0 && (
+        <Card>
+          <h2 className="text-lg font-semibold text-white mb-1">Tu perfil de ventas</h2>
+          <p className="text-xs text-slate-500 mb-4">Basado en {a.totalSessions} sesiones</p>
+          <div className="space-y-3">
+            {[
+              { key: 'avgRapport', label: 'Rapport', icon: '🤝' },
+              { key: 'avgDiscovery', label: 'Descubrimiento SPIN', icon: '🔍' },
+              { key: 'avgPresentation', label: 'Propuesta de valor', icon: '💡' },
+              { key: 'avgObjectionHandling', label: 'Objeciones', icon: '🛡' },
+              { key: 'avgClosing', label: 'Cierre', icon: '🎯' },
+              { key: 'avgCommunication', label: 'Comunicacion', icon: '🗣' },
+            ].map(cat => {
+              const score = Math.round((a as any)[cat.key] || 0);
+              const teamScore = Math.round((a as any)[cat.key.replace('avg', 'teamAvg')] || 0);
+              return (
+                <div key={cat.key}>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm text-slate-300 flex items-center gap-1.5">
+                      <span className="text-xs">{cat.icon}</span>
+                      {cat.label}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-sm font-bold ${score >= 80 ? 'text-emerald-400' : score >= 60 ? 'text-amber-400' : 'text-red-400'}`}>{score}</span>
+                      <span className="text-[10px] text-slate-500">vs {teamScore} equipo</span>
+                    </div>
+                  </div>
+                  <div className="relative h-2 bg-slate-700/50 rounded-full overflow-hidden">
+                    <div className={`absolute inset-y-0 left-0 rounded-full ${score >= 80 ? 'bg-gradient-to-r from-emerald-500 to-emerald-400' : score >= 60 ? 'bg-gradient-to-r from-amber-500 to-amber-400' : 'bg-gradient-to-r from-red-500 to-red-400'}`} style={{ width: `${score}%` }} />
+                    {teamScore > 0 && (
+                      <div className="absolute top-0 bottom-0 w-0.5 bg-slate-400/50" style={{ left: `${teamScore}%` }} title={`Equipo: ${teamScore}`} />
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+      )}
+
       {/* Admin quick actions */}
       {isAdmin && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

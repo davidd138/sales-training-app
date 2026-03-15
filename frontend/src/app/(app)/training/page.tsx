@@ -116,6 +116,37 @@ export default function TrainingPage() {
     transcriptEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [training.transcript]);
 
+  // Cleanup: save conversation if user closes tab/browser during a call
+  useEffect(() => {
+    const saveOnExit = () => {
+      if (conversationId && phase === 'call' && training.transcript.length > 0) {
+        const duration = Math.floor((Date.now() - startTimeRef.current) / 1000);
+        const transcriptStr = JSON.stringify(training.transcript);
+        // Use sendBeacon for reliable delivery on page close
+        const payload = JSON.stringify({
+          query: `mutation($i:UpdateConversationInput!){updateConversation(input:$i){id}}`,
+          variables: { i: { id: conversationId, status: 'completed', duration, transcript: transcriptStr } },
+        });
+        // Try sendBeacon (works on tab close), falls back to nothing
+        navigator.sendBeacon?.(
+          'https://zyorp7bunvdffah5b6hxlarpge.appsync-api.eu-west-1.amazonaws.com/graphql',
+          new Blob([payload], { type: 'application/json' })
+        );
+      }
+    };
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (phase === 'call' && training.transcript.length > 0) {
+        saveOnExit();
+        e.preventDefault();
+        e.returnValue = 'Tienes una llamada en curso. ¿Seguro que quieres salir?';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [conversationId, phase, training.transcript]);
+
   const startCall = useCallback(async () => {
     if (!scenario) return;
     try {

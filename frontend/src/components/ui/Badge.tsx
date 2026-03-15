@@ -8,6 +8,7 @@ const colorMap: Record<string, string> = {
   active: 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/25',
   suspended: 'bg-red-500/15 text-red-400 border border-red-500/25',
   expired: 'bg-orange-500/15 text-orange-400 border border-orange-500/25',
+  abandoned: 'bg-slate-500/15 text-slate-400 border border-slate-500/25',
   admin: 'bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-400 border border-amber-500/30',
 };
 
@@ -21,6 +22,7 @@ const labelMap: Record<string, string> = {
   active: 'Activo',
   suspended: 'Suspendido',
   expired: 'Expirado',
+  abandoned: 'Abandonada',
   admin: 'Admin',
 };
 

@@ -17,6 +17,7 @@ const SAMPLE_RATE = 24000;
 export function useRealtimeTraining(scenario: Scenario) {
   const [state, setState] = useState<TrainingState>('idle');
   const [transcript, setTranscript] = useState<TranscriptEntry[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const micStreamRef = useRef<MediaStream | null>(null);
   const micCtxRef = useRef<AudioContext | null>(null);
@@ -404,9 +405,12 @@ Casi nunca respondas a la pregunta original directamente. Haz que se lo trabaje.
 
   const connect = useCallback(async () => {
     setState('connecting');
+    setErrorMessage(null);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: { sampleRate: SAMPLE_RATE, channelCount: 1, echoCancellation: true, noiseSuppression: true },
+      }).catch((e) => {
+        throw new Error(`No se pudo acceder al microfono: ${e.message}. Verifica que has dado permiso de microfono al navegador.`);
       });
       micStreamRef.current = stream;
 
@@ -421,7 +425,21 @@ Casi nunca respondas a la pregunta original directamente. Haz que se lo trabaje.
       micCtxRef.current = micAudioCtx;
 
       const result = await getClient().graphql({ query: GET_REALTIME_TOKEN });
-      const { token } = (result as any).data.getRealtimeToken;
+      const errors = (result as any).errors;
+      if (errors && errors.length > 0) {
+        const msg = errors[0].message || 'Error al obtener token de sesion';
+        throw new Error(msg.includes('Access denied')
+          ? 'Tu cuenta no tiene acceso. Contacta con tu administrador.'
+          : msg.includes('expired')
+          ? 'Tu periodo de acceso ha expirado. Contacta con tu profesor.'
+          : `Error de conexion: ${msg}`
+        );
+      }
+      const tokenData = (result as any).data?.getRealtimeToken;
+      if (!tokenData || !tokenData.token) {
+        throw new Error('No se pudo obtener el token de sesion. Intenta recargar la pagina.');
+      }
+      const { token } = tokenData;
 
       const ws = new WebSocket(
         'wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview',
@@ -504,8 +522,9 @@ UNA sola frase. Tono neutro tirando a seco.`,
       ws.onmessage = (event) => handleMessage(JSON.parse(event.data));
       ws.onerror = () => setState('error');
       ws.onclose = () => setState('idle');
-    } catch (e) {
+    } catch (e: any) {
       console.error('Connection failed:', e);
+      setErrorMessage(e.message || 'Error de conexion desconocido');
       setState('error');
     }
   }, [buildSystemPrompt, handleMessage, startMicStream]);
@@ -520,5 +539,5 @@ UNA sola frase. Tono neutro tirando a seco.`,
     setState('idle');
   }, []);
 
-  return { state, transcript, connect, disconnect };
+  return { state, transcript, connect, disconnect, errorMessage };
 }

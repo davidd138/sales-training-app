@@ -29,11 +29,15 @@ def check_user_access(user_id: str) -> dict:
     if status == "expired":
         raise Exception("Access denied: your access has expired, contact your professor")
 
-    if status == "active":
-        # Check temporal access window
+    if status != "active":
+        raise Exception(f"Access denied: account status is '{status}'")
+
+    # Check temporal access window (only if dates are set)
+    valid_from = user.get("validFrom")
+    valid_until = user.get("validUntil")
+
+    if valid_from or valid_until:
         now = datetime.now(timezone.utc).isoformat()
-        valid_from = user.get("validFrom")
-        valid_until = user.get("validUntil")
 
         if valid_from and now < valid_from:
             raise Exception("Access denied: your access period has not started yet")

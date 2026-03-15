@@ -482,6 +482,12 @@ export default function TrainingPage() {
           </div>
           <h2 className="text-xl sm:text-2xl font-bold text-white">{scenario.clientName}</h2>
           <p className="text-slate-500 text-xs sm:text-sm">{scenario.clientTitle} — {scenario.clientCompany}</p>
+          {training.state === 'error' && training.errorMessage && (
+            <div className="mt-3 bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3 max-w-md">
+              <p className="text-red-400 text-sm">{training.errorMessage}</p>
+              <button onClick={() => training.connect()} className="mt-2 text-xs text-blue-400 hover:underline">Reintentar conexion</button>
+            </div>
+          )}
         </div>
 
         <p className="text-4xl sm:text-5xl font-mono text-white mb-6 sm:mb-8 tabular-nums tracking-wider">

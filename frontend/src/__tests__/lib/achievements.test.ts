@@ -12,7 +12,7 @@ describe('Achievements', () => {
   };
 
   it('has 10 achievements defined', () => {
-    expect(ACHIEVEMENTS).toHaveLength(10);
+    expect(ACHIEVEMENTS).toHaveLength(15);
   });
 
   it('returns no achievements for fresh user', () => {

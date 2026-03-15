@@ -178,7 +178,7 @@ export default function ScenariosPage() {
       {/* Scenario detail preview modal */}
       {selectedScenario && selectedDiff && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 flex items-end sm:items-center sm:justify-center sm:p-4"
           onClick={() => setSelectedScenario(null)}
         >
           {/* Backdrop */}
@@ -186,7 +186,7 @@ export default function ScenariosPage() {
 
           {/* Modal */}
           <div
-            className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-slate-800/95 backdrop-blur-xl border border-slate-700/50 shadow-2xl shadow-black/50 animate-fade-in"
+            className="relative w-full h-full sm:h-auto sm:max-w-lg sm:mx-auto sm:max-h-[90vh] overflow-y-auto sm:rounded-2xl bg-slate-800/95 backdrop-blur-xl border-t sm:border border-slate-700/50 shadow-2xl shadow-black/50 animate-fade-in"
             onClick={e => e.stopPropagation()}
           >
             {/* Header gradient bar */}
@@ -203,7 +203,7 @@ export default function ScenariosPage() {
                 </div>
                 <button
                   onClick={() => setSelectedScenario(null)}
-                  className="text-slate-400 hover:text-white transition-colors p-1"
+                  className="text-slate-400 hover:text-white transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -255,7 +255,7 @@ export default function ScenariosPage() {
               </div>
 
               {/* Action buttons */}
-              <div className="flex items-center gap-3 pt-2">
+              <div className="fixed bottom-0 left-0 right-0 p-4 bg-slate-900/95 backdrop-blur-sm border-t border-slate-700/50 sm:relative sm:p-0 sm:bg-transparent sm:backdrop-blur-none sm:border-t-0 flex items-center gap-3 sm:pt-2">
                 <Button
                   onClick={() => router.push(`/training?id=${selectedScenario.id}`)}
                   className="flex-1 py-3 text-sm bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 border-0 shadow-lg shadow-blue-500/25 transition-all hover:shadow-xl hover:shadow-blue-500/30"
@@ -269,11 +269,13 @@ export default function ScenariosPage() {
                 </Button>
                 <button
                   onClick={() => setSelectedScenario(null)}
-                  className="px-5 py-3 text-sm text-slate-400 hover:text-white bg-slate-700/50 hover:bg-slate-700 border border-slate-600/50 rounded-lg transition-all"
+                  className="px-5 py-3 min-h-[44px] text-sm text-slate-400 hover:text-white bg-slate-700/50 hover:bg-slate-700 border border-slate-600/50 rounded-lg transition-all"
                 >
                   Volver
                 </button>
               </div>
+              {/* Spacer to prevent content from being hidden behind fixed action buttons on mobile */}
+              <div className="h-20 sm:hidden" />
             </div>
           </div>
         </div>

@@ -5,7 +5,7 @@ import { ButtonHTMLAttributes } from 'react';
 type Variant = 'primary' | 'secondary' | 'danger' | 'ghost';
 
 const variants: Record<Variant, string> = {
-  primary: 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white shadow-lg shadow-blue-500/15 hover:shadow-blue-500/25',
+  primary: 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white shadow-lg shadow-blue-500/15 hover:shadow-blue-500/25 btn-ripple',
   secondary: 'bg-slate-700 hover:bg-slate-600 text-slate-200 border border-slate-600',
   danger: 'bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/15',
   ghost: 'bg-transparent hover:bg-slate-700/50 text-slate-300',

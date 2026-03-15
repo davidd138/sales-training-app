@@ -4,7 +4,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useQuery, useMutation } from '@/hooks/useGraphQL';
 import { useRealtimeTraining } from '@/hooks/useRealtimeTraining';
-import { LIST_SCENARIOS } from '@/lib/graphql/queries';
+import { LIST_SCENARIOS, LIST_CONVERSATIONS } from '@/lib/graphql/queries';
 import { CREATE_CONVERSATION, UPDATE_CONVERSATION, ANALYZE_CONVERSATION } from '@/lib/graphql/mutations';
 import { Spinner } from '@/components/ui/Spinner';
 import { Button } from '@/components/ui/Button';
@@ -81,6 +81,8 @@ export default function TrainingPage() {
   const summaryTranscriptRef = useRef<HTMLDivElement>(null);
 
   const scenarios = useQuery<Scenario[]>(LIST_SCENARIOS);
+  const conversationsQuery = useQuery<{ items: any[]; nextToken: string | null }>(LIST_CONVERSATIONS);
+  const [previousAttempts, setPreviousAttempts] = useState<any[]>([]);
   const createConv = useMutation(CREATE_CONVERSATION);
   const updateConv = useMutation(UPDATE_CONVERSATION);
   const analyzeConv = useMutation(ANALYZE_CONVERSATION);
@@ -96,6 +98,19 @@ export default function TrainingPage() {
       else router.replace('/scenarios');
     });
   }, [scenarioId]);
+
+  useEffect(() => {
+    if (scenario) {
+      conversationsQuery.execute({ limit: 50 }).then((result: any) => {
+        if (result?.items) {
+          const filtered = result.items
+            .filter((c: any) => c.scenarioName === scenario.name)
+            .sort((a: any, b: any) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime());
+          setPreviousAttempts(filtered);
+        }
+      });
+    }
+  }, [scenario]);
 
   useEffect(() => {
     transcriptEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -237,6 +252,29 @@ export default function TrainingPage() {
             <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-5 mb-6">
               <h2 className="text-sm font-semibold text-blue-400 uppercase tracking-wider mb-2">Objetivos de aprendizaje</h2>
               <p className="text-sm text-slate-300">{persona.learningObjectives}</p>
+            </div>
+          )}
+
+          {/* Previous attempts */}
+          {previousAttempts.length > 0 && (
+            <div className="bg-slate-800/50 rounded-xl border border-slate-700/50 p-5 mb-6">
+              <h2 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-3 flex items-center gap-2">
+                <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Intentos anteriores ({previousAttempts.length})
+              </h2>
+              <div className="space-y-2">
+                {previousAttempts.slice(0, 3).map((conv: any) => (
+                  <div key={conv.id} className="flex items-center justify-between text-sm bg-slate-700/30 rounded-lg px-3 py-2">
+                    <span className="text-slate-400">{new Date(conv.startedAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}</span>
+                    <div className="flex items-center gap-2">
+                      {conv.duration && <span className="text-slate-500 text-xs">{Math.floor(conv.duration / 60)}:{String(conv.duration % 60).padStart(2, '0')}</span>}
+                      <Badge value={conv.status} />
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 

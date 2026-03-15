@@ -336,6 +336,64 @@ export default function AnalysisPage() {
         </p>
       </div>
 
+      {/* SPIN question analysis */}
+      {data?.conversation.transcript && (() => {
+        try {
+          const transcript = JSON.parse(data.conversation.transcript);
+          const userMessages = transcript.filter((e: any) => e.role === 'user');
+          const totalQuestions = userMessages.filter((e: any) => e.text?.includes('?')).length;
+
+          // Simple heuristic keyword detection
+          const situationKeywords = ['actualmente', 'ahora mismo', 'que proveedor', 'cuanto', 'cuantos', 'desde cuando', 'como es', 'que tipo'];
+          const problemKeywords = ['problema', 'preocupa', 'dificultad', 'frustrar', 'molesta', 'insatisf', 'falla', 'queja'];
+          const implicationKeywords = ['impacto', 'consecuencia', 'afecta', 'significa', 'si eso sigue', 'costar', 'perder', 'riesgo'];
+          const needPayoffKeywords = ['si pudiera', 'que significaria', 'como mejoraria', 'que valor', 'imagina', 'beneficio', 'solucion'];
+
+          const countByType = (keywords: string[]) =>
+            userMessages.filter((e: any) => keywords.some(k => e.text?.toLowerCase().includes(k))).length;
+
+          const s_count = countByType(situationKeywords);
+          const p_count = countByType(problemKeywords);
+          const i_count = countByType(implicationKeywords);
+          const nb_count = countByType(needPayoffKeywords);
+          const maxCount = Math.max(s_count, p_count, i_count, nb_count, 1);
+
+          if (totalQuestions === 0) return null;
+
+          return (
+            <div className="glass rounded-2xl p-5 sm:p-6 animate-slide-up">
+              <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
+                </svg>
+                Analisis de preguntas SPIN
+              </h2>
+              <p className="text-xs text-slate-500 mb-3">Preguntas detectadas: {totalQuestions} | Estimacion basada en analisis de palabras clave</p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {[
+                  { label: 'Situacion', count: s_count, color: 'blue', desc: 'Contexto actual' },
+                  { label: 'Problema', count: p_count, color: 'amber', desc: 'Dolores y retos' },
+                  { label: 'Implicacion', count: i_count, color: 'purple', desc: 'Consecuencias' },
+                  { label: 'Necesidad', count: nb_count, color: 'emerald', desc: 'Valor de resolver' },
+                ].map(item => (
+                  <div key={item.label} className="text-center p-3 rounded-xl bg-slate-700/30 border border-slate-700/50">
+                    <p className={`text-2xl font-bold text-${item.color}-400`}>{item.count}</p>
+                    <p className="text-xs text-slate-300 font-medium mt-1">{item.label}</p>
+                    <p className="text-[10px] text-slate-500">{item.desc}</p>
+                    <div className="mt-2 h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                      <div className={`h-full bg-${item.color}-500 rounded-full`} style={{ width: `${(item.count / maxCount) * 100}%` }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[10px] text-slate-600 mt-3 text-center italic">
+                Los mejores comerciales progresan de S → P → I → N de forma natural durante la conversacion
+              </p>
+            </div>
+          );
+        } catch { return null; }
+      })()}
+
       {/* Category Breakdown */}
       <div className="glass rounded-2xl p-5 sm:p-6 animate-slide-up">
         <h2 className="text-lg font-semibold text-white mb-5 flex items-center gap-2">

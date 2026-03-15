@@ -126,7 +126,7 @@ export default function TrainingPage() {
           input: { id: conversationId, duration, transcript: JSON.stringify(training.transcript) },
         }).catch(() => {}); // Silent - don't interrupt the call
       }
-    }, 30000);
+    }, 15000);
     return () => clearInterval(autoSaveInterval);
   }, [phase, conversationId, training.transcript.length]);
 

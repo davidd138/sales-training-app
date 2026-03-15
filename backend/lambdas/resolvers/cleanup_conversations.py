@@ -9,12 +9,12 @@ from datetime import datetime, timezone, timedelta
 
 conversations_table = boto3.resource("dynamodb").Table(os.environ.get("CONVERSATIONS_TABLE", "dev-st-conversations"))
 
-STALE_THRESHOLD_HOURS = 2
+STALE_THRESHOLD_MINUTES = 10
 
 
 def handler(event, context):
     """Find and mark stale in_progress conversations as abandoned."""
-    cutoff = (datetime.now(timezone.utc) - timedelta(hours=STALE_THRESHOLD_HOURS)).isoformat()
+    cutoff = (datetime.now(timezone.utc) - timedelta(minutes=STALE_THRESHOLD_MINUTES)).isoformat()
 
     # Scan for in_progress conversations (could use GSI for better performance)
     response = conversations_table.scan(

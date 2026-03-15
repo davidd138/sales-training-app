@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useQuery, useMutation } from '@/hooks/useGraphQL';
 import { GET_CONVERSATION, LIST_SCENARIOS } from '@/lib/graphql/queries';
@@ -293,6 +293,49 @@ export default function AnalysisPage() {
         </div>
       </div>
 
+      {/* Conversation map */}
+      <div className="glass rounded-2xl p-5 sm:p-6 animate-slide-up">
+        <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+          <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z" />
+          </svg>
+          Mapa de la conversacion
+        </h2>
+        <div className="flex items-center gap-1 sm:gap-2">
+          {[
+            { phase: 'Apertura', key: 'rapport', emoji: '👋' },
+            { phase: 'Descubrimiento', key: 'discovery', emoji: '🔍' },
+            { phase: 'Presentacion', key: 'presentation', emoji: '💡' },
+            { phase: 'Objeciones', key: 'objectionHandling', emoji: '🛡' },
+            { phase: 'Cierre', key: 'closing', emoji: '🎯' },
+          ].map((p, i) => {
+            const score = (s[p.key as keyof Score] as number) || 0;
+            const covered = score > 20;
+            return (
+              <React.Fragment key={p.key}>
+                {i > 0 && (
+                  <div className={`h-0.5 flex-1 ${covered ? 'bg-gradient-to-r from-blue-500 to-cyan-500' : 'bg-slate-700'}`} />
+                )}
+                <div className={`flex flex-col items-center gap-1 ${covered ? '' : 'opacity-40'}`}>
+                  <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-sm ${
+                    score >= 70 ? 'bg-emerald-500/20 ring-2 ring-emerald-500/30' :
+                    score >= 40 ? 'bg-amber-500/20 ring-2 ring-amber-500/30' :
+                    covered ? 'bg-red-500/20 ring-2 ring-red-500/30' :
+                    'bg-slate-700/50 ring-1 ring-slate-600'
+                  }`}>
+                    {p.emoji}
+                  </div>
+                  <span className="text-[10px] text-slate-400 text-center leading-tight hidden sm:block">{p.phase}</span>
+                </div>
+              </React.Fragment>
+            );
+          })}
+        </div>
+        <p className="text-xs text-slate-500 mt-3 text-center">
+          Las fases iluminadas indican que el comercial las cubrio durante la llamada
+        </p>
+      </div>
+
       {/* Category Breakdown */}
       <div className="glass rounded-2xl p-5 sm:p-6 animate-slide-up">
         <h2 className="text-lg font-semibold text-white mb-5 flex items-center gap-2">
@@ -409,6 +452,31 @@ export default function AnalysisPage() {
           <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap bg-slate-800/50 rounded-xl p-4 border border-slate-700/30">
             {s.detailedFeedback}
           </p>
+          {/* Talk ratio estimate */}
+          {data?.conversation.transcript && (() => {
+            try {
+              const t = JSON.parse(data.conversation.transcript);
+              const userWords = t.filter((e: any) => e.role === 'user').reduce((sum: number, e: any) => sum + (e.text?.split(' ').length || 0), 0);
+              const clientWords = t.filter((e: any) => e.role === 'assistant').reduce((sum: number, e: any) => sum + (e.text?.split(' ').length || 0), 0);
+              const total = userWords + clientWords;
+              if (total === 0) return null;
+              const userPct = Math.round((userWords / total) * 100);
+              const clientPct = 100 - userPct;
+              const isGood = userPct <= 40;
+              return (
+                <div className="mt-4 pt-4 border-t border-slate-700/30">
+                  <p className="text-xs text-slate-500 mb-2">Ratio de habla (objetivo: 30% tu / 70% cliente)</p>
+                  <div className="flex h-3 rounded-full overflow-hidden bg-slate-700/50">
+                    <div className={`${isGood ? 'bg-gradient-to-r from-blue-500 to-cyan-500' : 'bg-gradient-to-r from-amber-500 to-red-500'} transition-all`} style={{ width: `${userPct}%` }} />
+                  </div>
+                  <div className="flex justify-between mt-1">
+                    <span className="text-[10px] text-slate-400">Tu: {userPct}%</span>
+                    <span className="text-[10px] text-slate-400">Cliente: {clientPct}%</span>
+                  </div>
+                </div>
+              );
+            } catch { return null; }
+          })()}
         </div>
       )}
 

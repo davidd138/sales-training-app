@@ -62,6 +62,16 @@ const DAILY_TIPS = [
   'Termina cada llamada con un siguiente paso concreto acordado con el cliente.',
 ];
 
+const WEEKLY_CHALLENGES = [
+  { goal: 'Consigue una puntuacion mayor de 75 en Descubrimiento', category: 'discovery', target: 75 },
+  { goal: 'Practica con un escenario de dificultad Experto', category: 'difficulty', target: 'hard' },
+  { goal: 'Consigue que tu ratio de habla sea menor del 35%', category: 'talkRatio', target: 35 },
+  { goal: 'Completa 3 sesiones esta semana', category: 'sessions', target: 3 },
+  { goal: 'Intenta usar preguntas de Implicacion (SPIN) en cada sesion', category: 'spin', target: 0 },
+  { goal: 'Consigue una puntuacion general mayor de 70', category: 'overall', target: 70 },
+  { goal: 'Practica con 2 industrias diferentes esta semana', category: 'industries', target: 2 },
+];
+
 export default function DashboardPage() {
   const { user } = useAuth();
   const router = useRouter();
@@ -428,6 +438,16 @@ export default function DashboardPage() {
         <div>
           <p className="text-xs font-semibold text-amber-400 uppercase tracking-wider mb-1">Tip del dia</p>
           <p className="text-sm text-slate-300">{DAILY_TIPS[new Date().getDate() % DAILY_TIPS.length]}</p>
+        </div>
+      </div>
+      {/* Reto semanal */}
+      <div className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-xl p-4 flex items-start gap-3">
+        <div className="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center shrink-0 mt-0.5">
+          <span className="text-lg">🏋</span>
+        </div>
+        <div>
+          <p className="text-xs font-semibold text-purple-400 uppercase tracking-wider mb-1">Reto semanal</p>
+          <p className="text-sm text-slate-300">{WEEKLY_CHALLENGES[Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000)) % WEEKLY_CHALLENGES.length].goal}</p>
         </div>
       </div>
     </div>

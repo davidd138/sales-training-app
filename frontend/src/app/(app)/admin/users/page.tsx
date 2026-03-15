@@ -377,10 +377,28 @@ function UsersContent() {
                 )}
               </div>
 
+              {/* User Stats */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-slate-700/30 rounded-lg p-3">
+                  <p className="text-xs text-slate-400 mb-1">Sesiones</p>
+                  <p className="text-sm text-slate-500 italic">Proximamente</p>
+                </div>
+                <div className="bg-slate-700/30 rounded-lg p-3">
+                  <p className="text-xs text-slate-400 mb-1">Ultima actividad</p>
+                  <p className="text-sm text-slate-500 italic">Proximamente</p>
+                </div>
+              </div>
+
               {/* User ID */}
               <div className="bg-slate-700/30 rounded-lg p-3">
                 <p className="text-xs text-slate-400 mb-1">ID de Usuario</p>
                 <p className="text-xs text-slate-500 font-mono break-all">{selectedUser.userId}</p>
+              </div>
+
+              {/* Notas del profesor */}
+              <div className="mt-4 pt-4 border-t border-slate-700/50">
+                <p className="text-xs text-slate-500 uppercase tracking-wider mb-2">Notas del profesor</p>
+                <p className="text-sm text-slate-400 italic">Proximamente: posibilidad de dejar notas sobre cada alumno.</p>
               </div>
             </div>
 

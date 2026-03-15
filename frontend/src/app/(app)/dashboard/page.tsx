@@ -15,6 +15,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import type { Analytics, User } from '@/types';
 import { ACHIEVEMENTS, getUnlockedAchievements } from '@/lib/achievements';
 import type { AchievementStats } from '@/lib/achievements';
+import { useToast } from '@/components/ui/Toast';
 
 function scoreColor(score: number) {
   if (score >= 80) return 'text-emerald-400';
@@ -75,6 +76,7 @@ const WEEKLY_CHALLENGES = [
 export default function DashboardPage() {
   const { user } = useAuth();
   const router = useRouter();
+  const { addToast } = useToast();
   const isAdmin = user?.role === 'admin' || (user?.groups && user.groups.includes('admins'));
   const analytics = useQuery<Analytics>(GET_ANALYTICS);
   const conversations = useQuery<{ items: any[]; nextToken: string | null }>(LIST_CONVERSATIONS);
@@ -251,12 +253,27 @@ export default function DashboardPage() {
               return (
                 <div
                   key={achievement.id}
-                  className={`relative rounded-xl p-4 text-center transition-all ${
+                  className={`relative group rounded-xl p-4 text-center transition-all ${
                     unlocked
                       ? 'bg-gradient-to-br from-slate-700/50 to-slate-800/50 border border-blue-500/30 shadow-lg shadow-blue-500/5'
                       : 'bg-slate-800/30 border border-slate-700/30 opacity-40'
                   }`}
                 >
+                  {unlocked && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigator.clipboard?.writeText(`He desbloqueado el logro "${achievement.title}" en SalesPulse AI! ${achievement.description}`);
+                        addToast('Logro copiado al portapapeles', 'info');
+                      }}
+                      className="absolute top-1 right-1 w-6 h-6 rounded-full bg-slate-700/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="Compartir logro"
+                    >
+                      <svg className="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
+                      </svg>
+                    </button>
+                  )}
                   <div className="text-3xl mb-2">
                     {unlocked ? achievement.icon : '🔒'}
                   </div>

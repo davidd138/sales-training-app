@@ -1,64 +1,152 @@
-# Progress Tracking — SalesPulse AI
+# SalesPulse AI - Project Status
 
-## Brand: SalesPulse AI
-- Tagline: "Entrena. Practica. Cierra."
-- Colors: Gradient blue (#3B82F6) to cyan (#06B6D4), dark slate backgrounds
-- Logo: SVG pulse/heartbeat motif with gradient
-- Production: https://d37iyzx8veabdy.cloudfront.net
+## Brand
 
-## Phase 1: Admin System & User Validation - COMPLETE
-- 1.1: Cognito `admins` group configured, admin users created via setup_admin.py
-- 1.2: User validation flow (pending → active → suspended → expired), validFrom/validUntil temporal access
-- 1.3: Admin dashboard (/admin/users, /admin/scenarios, /admin/guidelines, /admin/analytics)
-- 1.4: Schema updated (status, validFrom, validUntil, voice, UserStatus enum)
-- Authorization on ALL resolvers via auth_helpers.py (status + time window checks)
-- AuthGuard: branded pending/suspended/expired screens with Logo
+- **Name**: SalesPulse AI
+- **Tagline**: "Entrena. Practica. Cierra."
+- **Colors**: Gradient blue (#3B82F6) to cyan (#06B6D4), dark slate backgrounds
+- **Logo**: SVG pulse/heartbeat motif with gradient
+- **Production URL**: https://d37iyzx8veabdy.cloudfront.net
+
+---
+
+## Completed Phases
+
+### Phase 1: Admin System & User Validation
+
+- Cognito `admins` group configured; admin users created via `setup_admin.py`
+- User validation flow with statuses: pending, active, suspended, expired
+- Temporal access control with `validFrom` / `validUntil` fields
+- Admin dashboard pages: `/admin/users`, `/admin/scenarios`, `/admin/guidelines`, `/admin/analytics`
+- Schema updated with `status`, `validFrom`, `validUntil`, `voice`, `UserStatus` enum
+- Authorization enforced on all resolvers via `auth_helpers.py` (status + time window checks)
+- AuthGuard: branded screens for pending, suspended, and expired users with Logo
 - Toast notifications for all admin CRUD operations
 - Audit logging (CloudWatch structured JSON) for admin actions
 
-## Phase 2: Expert Sales Analysis System - COMPLETE
-- 2.1: Research-based 6-category framework (Rapport 15%, Discovery/SPIN 25%, Presentation 20%, Objections 20%, Closing 10%, Communication 10%)
-- 2.2: Complete rewrite of analyze_conversation.py with multi-step analysis
-  - Claude 3.5 Sonnet via Bedrock (us-east-1)
-  - Coach persona: Alejandro Mendez (20+ years)
-  - SPIN Selling, Challenger Sale, Sandler, MEDDIC frameworks
-  - Subcriteria per category with behavioral indicators
-  - Calibrated scoring rubric (0-100)
-  - Spanish business culture context
-  - Evidence-based scoring with transcript quotes
-  - Server-side weighted score recalculation
-- 2.3: Admin-configurable criteria via guidelines CRUD
-- Re-analyze button and animated loading steps
+### Phase 2: Expert Sales Analysis System
 
-## Phase 3: Realistic AI Client Personas - COMPLETE
-- 3.1: Deep persona system prompt with emotional dynamics and 7 reaction rules
-- 3.2: Voice selection per persona (8 OpenAI voices with admin selector)
-- 3.3: 8 expert scenarios seeded (2 easy, 3 medium, 3 hard)
-- 3.4: Admin client creator with full persona form
-- Natural Spanish speech (muletillas, onomatopeas)
-- Personality-specific phone greetings
+- Research-based 6-category scoring framework:
+  - Rapport Building (15%), Discovery/SPIN Questions (25%), Value Presentation (20%), Objection Handling (20%), Closing Techniques (10%), Communication Skills (10%)
+- Complete rewrite of `analyze_conversation.py` with multi-step analysis pipeline
+- Claude 3.5 Sonnet via Amazon Bedrock (us-east-1) with Amazon Nova Pro as automatic fallback
+- Coach persona: Alejandro Mendez (20+ years experience)
+- Integrates SPIN Selling, Challenger Sale, Sandler, and MEDDIC frameworks
+- Subcriteria per category with behavioral indicators
+- Calibrated scoring rubric (0-100) with evidence-based scoring using transcript quotes
+- Spanish business culture context throughout
+- Server-side weighted score recalculation
+- Admin-configurable evaluation criteria via guidelines CRUD
+- Re-analyze button with animated loading steps
 
-## Phase 4: Frontend Excellence — COMPLETE
-- 4.1 UI/UX: Modern SalesPulse AI brand, responsive, ARIA labels, skeleton loaders, error boundary, empty states
-- 4.2 Training: Pre-call briefing, real-time visual feedback, call timer, quick notes, post-call summary with self-reflection
-- 4.3 Navigation: Student/admin separation, breadcrumbs, admin badge, mobile hamburger
-- Marketing: testimonials, "trusted by" badges, feature highlights, daily tips, onboarding guide
-- Full component library: Logo, StatsCard, EmptyState, SkeletonLoader, Toast, ErrorBoundary
-- Custom animations, glass-morphism, gradient text, 404 page, branded loading
+### Phase 3: Realistic AI Client Personas
 
-## Phase 5: Infrastructure & Security - COMPLETE
-- 5.1: Auth checks on all resolvers, audit logging, WAFv2 rate limiting
-- 5.2: CDK stack complete, Bedrock permissions, CloudFront security headers
-- 5.3: Backward-compatible field additions, graceful missing field handling
+- Deep persona system prompt with emotional dynamics and 7 reaction rules
+- Voice selection per persona (8 OpenAI Realtime voices with admin voice selector)
+- 8 expert scenarios seeded across difficulty levels (2 easy, 3 medium, 3 hard)
+- Admin client creator with full persona configuration form
+- Natural Spanish speech patterns (muletillas, onomatopoeia)
+- Personality-specific phone greetings; AI client answers the call first
 
-## Phase 6: Testing - COMPLETE
-- 46 backend tests passing (auth, validation, analysis prompt, category weights, frameworks)
-- 31 frontend tests passing (components, pages, hooks)
+### Phase 4: Frontend Excellence
+
+- Modern SalesPulse AI branding with responsive design
+- ARIA labels, skeleton loaders, error boundary, empty states
+- Pre-call briefing, real-time visual feedback, call timer, quick notes
+- Post-call summary with self-reflection prompts
+- Student/admin navigation separation, breadcrumbs, admin badge, mobile hamburger menu
+- Full component library: Logo, StatsCard, EmptyState, SkeletonLoader, Toast, ErrorBoundary, Card, Badge
+- Custom animations, glass-morphism, gradient text, branded 404 page, branded loading screen
+
+### Phase 5: Infrastructure & Security
+
+- Auth checks enforced on all Lambda resolvers
+- Audit logging for admin actions (CloudWatch structured JSON)
+- WAFv2 rate limiting (1,000 requests per 5 minutes per IP)
+- CDK stack with Bedrock permissions and CloudFront security headers (HSTS, CSP)
+- Backward-compatible schema field additions with graceful missing-field handling
+
+### Phase 6: Testing
+
+- **222 total tests** across backend and frontend
+- Backend: unit tests for auth, validation, analysis prompt, category weights, frameworks, conversations, analytics, audit helpers, and E2E integration
+- Frontend: component tests (Logo, EmptyState, StatsCard, Toast, SkeletonLoader, Card, Badge), page tests (scenarios, analysis, training, analysis-flow), hook tests (useGraphQL), and library tests (achievements, achievements-extended)
 - Frontend build verified (Next.js 15 static export, 17 pages)
-- CI/CD auto-deploys on push to main (CodePipeline all stages succeeded)
-- Production URL verified accessible
+- CI/CD auto-deploys on push to main via CodePipeline
 
-## Deployment Summary
-- 19 commits pushed to main
-- All deployed via CodePipeline (Source → Build → Deploy)
-- Production: https://d37iyzx8veabdy.cloudfront.net
+---
+
+## Improvements Summary
+
+### Conversations
+- AI client answers the phone first for a realistic cold-call experience
+- Deep persona system with emotional dynamics and personality-driven reactions
+- Natural Spanish muletillas and colloquial speech patterns
+
+### Analysis
+- Multi-model support: Claude 3.5 Sonnet (primary) with Amazon Nova Pro (fallback)
+- Evidence-based scoring with direct transcript quotes
+- Admin-configurable evaluation guidelines and weights
+
+### Gamification
+- Achievement system with multiple unlock tiers
+- Leaderboard with ranking across users
+- Stats cards and progress tracking on dashboard
+
+### Marketing & Onboarding
+- Testimonials section, "trusted by" institution badges, feature highlights
+- Daily tips and onboarding guide for new users
+
+### Accessibility
+- ARIA labels on interactive elements
+- Skeleton loaders for perceived performance
+- Error boundary with recovery options
+- Branded empty states with action prompts
+
+---
+
+## Deployment
+
+- **Region**: eu-west-1
+- **Pipeline**: CodePipeline (Source -> Build -> Deploy), auto-triggers on push to `main`
+- **Production URL**: https://d37iyzx8veabdy.cloudfront.net
+- **Frontend**: Next.js 15 static export -> S3 + CloudFront
+- **Backend**: Lambda resolvers (Python 3.11), AppSync GraphQL, DynamoDB, Cognito
+
+---
+
+## Running Tests
+
+```bash
+# Backend tests (all)
+cd backend && python3 -m pytest tests/ -v
+
+# Backend E2E tests only
+cd backend && python3 -m pytest tests/test_e2e.py -v -m e2e
+
+# Frontend tests
+cd frontend && npx vitest run
+```
+
+## Seeding Data
+
+```bash
+cd backend/scripts
+
+# Seed everything (scenarios + guidelines)
+python3 seed_all.py
+
+# Seed with clearing existing data first
+python3 seed_all.py --clear
+
+# Individual seeds
+python3 seed_scenarios.py
+python3 seed_guidelines.py
+```
+
+---
+
+## Known Configuration Requirements
+
+- **OpenAI API Key**: Stored in AWS Secrets Manager as `dev/openai-api-key`. Required for real-time voice conversation sessions via the OpenAI Realtime API.
+- **Amazon Bedrock Access**: Claude 3.5 Sonnet model access must be enabled in the Bedrock console (us-east-1). Requires completing the Anthropic use-case form. Amazon Nova Pro is used automatically as a fallback while access is pending.
